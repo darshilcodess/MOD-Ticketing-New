@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, AlertCircle, Clock, Circle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, Circle, ArrowRight } from 'lucide-react';
 
 export default function ActivityHistory({ tickets }) {
     // Derive activities from tickets
@@ -42,12 +42,17 @@ export default function ActivityHistory({ tickets }) {
 
     return (
         <div className="bg-white/40 backdrop-blur-xl p-6 rounded-2xl shadow-xl border border-white/40">
-            <h2 className="text-xl font-bold text-slate-800 mb-8 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-orange-500" />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-900">
-                    Activity Timeline
-                </span>
-            </h2>
+            <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-orange-500" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-900">
+                        Activity Timeline
+                    </span>
+                </h2>
+                <button className="text-sm font-bold text-slate-500 hover:text-orange-600 flex items-center gap-1 transition-colors">
+                    View All <ArrowRight size={14} />
+                </button>
+            </div>
 
             <div className="relative space-y-16 px-2 min-h-[150px]">
                 {activities.length === 0 ? (

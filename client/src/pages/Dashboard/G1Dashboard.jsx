@@ -79,9 +79,14 @@ export default function G1Dashboard() {
                         <div className="h-8 w-1.5 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-500/30"></div>
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Incoming Requests</h2>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
-                        {pendingTickets.length} PENDING
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
+                            {pendingTickets.length} PENDING
+                        </span>
+                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-orange-600">
+                            View All <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

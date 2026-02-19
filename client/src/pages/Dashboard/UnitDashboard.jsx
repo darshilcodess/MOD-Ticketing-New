@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Plus, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -8,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ActivityHistory from '../../components/ActivityHistory';
 
 export default function UnitDashboard() {
+    const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -48,13 +50,13 @@ export default function UnitDashboard() {
         }
     };
 
-    const getPriorityColor = (priority) => {
+    const getPriorityStyles = (priority) => {
         switch (priority) {
-            case 'CRITICAL': return 'bg-red-500 text-red-600 bg-red-50 border-red-200';
-            case 'HIGH': return 'bg-orange-500 text-orange-600 bg-orange-50 border-orange-200';
-            case 'MEDIUM': return 'bg-yellow-500 text-yellow-700 bg-yellow-50 border-yellow-200';
-            case 'LOW': return 'bg-blue-500 text-blue-600 bg-blue-50 border-blue-200';
-            default: return 'bg-slate-500 text-slate-600 bg-slate-50 border-slate-200';
+            case 'CRITICAL': return { line: 'bg-red-500', badge: 'bg-red-50 text-red-700 border-red-200' };
+            case 'HIGH': return { line: 'bg-orange-500', badge: 'bg-orange-50 text-orange-700 border-orange-200' };
+            case 'MEDIUM': return { line: 'bg-yellow-500', badge: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
+            case 'LOW': return { line: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700 border-blue-200' };
+            default: return { line: 'bg-slate-500', badge: 'bg-slate-50 text-slate-700 border-slate-200' };
         }
     };
 
@@ -82,49 +84,55 @@ export default function UnitDashboard() {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Active Tickets Section */}
-                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg min-h-[500px]">
-                    <div className="flex items-center justify-between mb-6">
+                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg min-h-[350px]">
+                    <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-1.5 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-500/30"></div>
-                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Active Tickets</h2>
+                            <div className="h-6 w-1 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full shadow-lg shadow-orange-500/30"></div>
+                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Active Tickets</h2>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
-                            {tickets.filter(t => t.status === 'OPEN').length} PENDING
-                        </span>
+                        <div className="flex items-center gap-3">
+                            <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 text-[10px] font-extrabold border border-orange-200 shadow-sm">
+                                {tickets.filter(t => t.status === 'OPEN').length} PENDING
+                            </span>
+                            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-orange-600">
+                                View All <ArrowRight className="w-3 h-3 ml-1" />
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="grid gap-4 grid-cols-1">
+                    <div className="grid gap-3 grid-cols-1">
                         <AnimatePresence>
-                            {tickets.filter(t => t.status === 'OPEN').map(ticket => (
+                            {tickets.filter(t => t.status === 'OPEN').slice(0, 3).map(ticket => (
                                 <Card
                                     key={ticket.id}
-                                    className="group border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden shadow-sm"
+                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                    className="group border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
                                 >
-                                    <div className={`h-1 w-full ${getPriorityColor(ticket.priority).split(' ')[0]}`} />
-                                    <CardHeader className="pb-3 pt-4">
+                                    <div className={`h-1 w-full ${getPriorityStyles(ticket.priority).line}`} />
+                                    <CardHeader className="pb-2 pt-3 px-4">
                                         <div className="flex justify-between items-start gap-4">
                                             <div className="space-y-1 w-full">
                                                 <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-slate-800 line-clamp-1 text-lg">{ticket.title}</h3>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityColor(ticket.priority)}`}>
+                                                    <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${getPriorityStyles(ticket.priority).badge}`}>
                                                         {ticket.priority}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-xs pt-1">
-                                                    <span className={`px-2 py-0.5 rounded font-medium border ${getStatusColor(ticket.status)}`}>
+                                                <div className="flex items-center gap-2 text-[10px] pt-1">
+                                                    <span className={`px-1.5 py-0.5 rounded font-medium border ${getStatusColor(ticket.status)}`}>
                                                         {ticket.status}
                                                     </span>
                                                     <span className="flex items-center gap-1 text-slate-400">
-                                                        <Clock size={12} /> {new Date(ticket.created_at).toLocaleDateString()}
+                                                        <Clock size={10} /> {new Date(ticket.created_at).toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-slate-600 line-clamp-3 mb-4 leading-relaxed">
+                                    <CardContent className="px-4 pb-3">
+                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                                             {ticket.description}
                                         </p>
                                     </CardContent>
@@ -132,24 +140,29 @@ export default function UnitDashboard() {
                             ))}
                         </AnimatePresence>
                         {tickets.filter(t => t.status === 'OPEN').length === 0 && (
-                            <div className="col-span-full py-12 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
+                            <div className="col-span-full py-8 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
                                 <div className="inline-flex p-3 rounded-full bg-slate-100 mb-3 text-slate-400"><CheckCircle2 size={24} /></div>
-                                <p className="font-medium">All caught up! No open tickets.</p>
+                                <p className="font-medium text-sm">All caught up! No open tickets.</p>
                             </div>
                         )}
                     </div>
                 </section>
 
                 {/* Resolved Tickets Section */}
-                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg min-h-[500px]">
-                    <div className="flex items-center justify-between mb-6">
+                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg min-h-[350px]">
+                    <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-1.5 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg shadow-green-500/30"></div>
-                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Resolved History</h2>
+                            <div className="h-6 w-1 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg shadow-green-500/30"></div>
+                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Resolved History</h2>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-extrabold border border-green-200 shadow-sm">
-                            {tickets.filter(t => t.status === 'RESOLVED').length} COMPLETED
-                        </span>
+                        <div className="flex items-center gap-3">
+                            <span className="px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-extrabold border border-green-200 shadow-sm">
+                                {tickets.filter(t => t.status === 'RESOLVED').length} COMPLETED
+                            </span>
+                            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-green-600">
+                                View All <ArrowRight className="w-3 h-3 ml-1" />
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="grid gap-4 grid-cols-1">
@@ -157,7 +170,8 @@ export default function UnitDashboard() {
                             {tickets.filter(t => t.status === 'RESOLVED').map(ticket => (
                                 <Card
                                     key={ticket.id}
-                                    className="group border border-white/40 bg-white/40 backdrop-blur-md opacity-80 hover:opacity-100 transition-all duration-300 overflow-hidden shadow-sm"
+                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                    className="group border border-white/40 bg-white/40 backdrop-blur-md opacity-80 hover:opacity-100 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
                                 >
                                     <div className={`h-1 w-full bg-green-500`} />
                                     <CardHeader className="pb-3 pt-4">

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertTriangle, Briefcase } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Briefcase, ArrowRight } from 'lucide-react';
 import ActivityHistory from '../../components/ActivityHistory';
 
 export default function TeamDashboard() {
+    const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [resolvingTicket, setResolvingTicket] = useState(null);
@@ -75,6 +77,10 @@ export default function TeamDashboard() {
                         <div className="h-8 w-1.5 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg shadow-green-500/30"></div>
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Your Assignments</h2>
                     </div>
+
+                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600">
+                        View All <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -82,21 +88,22 @@ export default function TeamDashboard() {
                         {assignedTickets.map(ticket => (
                             <Card
                                 key={ticket.id}
-                                className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 shadow-sm"
+                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 shadow-sm cursor-pointer"
                             >
                                 <div className={`h-1 w-full bg-gradient-to-r ${ticket.priority === 'CRITICAL' ? 'from-red-500 to-red-600' :
-                                        ticket.priority === 'HIGH' ? 'from-orange-500 to-orange-600' :
-                                            ticket.priority === 'MEDIUM' ? 'from-yellow-500 to-yellow-600' :
-                                                'from-blue-500 to-blue-600'
+                                    ticket.priority === 'HIGH' ? 'from-orange-500 to-orange-600' :
+                                        ticket.priority === 'MEDIUM' ? 'from-yellow-500 to-yellow-600' :
+                                            'from-blue-500 to-blue-600'
                                     }`} />
 
                                 <CardHeader className="pb-3 pt-4">
                                     <div className="flex justify-between items-start">
                                         <CardTitle className="text-lg font-bold text-slate-800 line-clamp-1">{ticket.title}</CardTitle>
                                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${ticket.priority === 'CRITICAL' ? 'bg-red-50 text-red-600 border-red-200' :
-                                                ticket.priority === 'HIGH' ? 'bg-orange-50 text-orange-600 border-orange-200' :
-                                                    ticket.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                                        'bg-blue-50 text-blue-600 border-blue-200'
+                                            ticket.priority === 'HIGH' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                                ticket.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                                    'bg-blue-50 text-blue-600 border-blue-200'
                                             }`}>
                                             {ticket.priority}
                                         </span>
@@ -129,7 +136,7 @@ export default function TeamDashboard() {
                         </div>
                     )}
                 </div>
-            </section>
+            </section >
 
             <div className="mt-8">
                 <ActivityHistory tickets={tickets} />
@@ -182,6 +189,6 @@ export default function TeamDashboard() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }

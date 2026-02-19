@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import TicketDetails from './pages/TicketDetails';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -14,6 +15,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tickets/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TicketDetails />
             </Layout>
           </ProtectedRoute>
         }

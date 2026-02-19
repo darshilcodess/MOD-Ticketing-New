@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from './components/Header';
 import { useAuth } from './context/AuthContext';
-import { LogOut } from 'lucide-react';
+import { LogOut, Bell } from 'lucide-react';
 
 const Layout = ({ children }) => {
     const { logout } = useAuth();
@@ -23,9 +23,13 @@ const Layout = ({ children }) => {
                     <div className="flex items-center gap-6">
                         <span className="text-white/80 text-sm font-medium">Jai Hind, User</span>
                         <div className="h-4 w-px bg-white/20"></div>
+                        <button className="text-white/70 hover:text-orange-400 transition-colors cursor-pointer">
+                            <Bell size={18} />
+                        </button>
+                        <div className="h-4 w-px bg-white/20"></div>
                         <button
                             onClick={logout}
-                            className="flex items-center gap-2 text-white/70 hover:text-red-400 transition-colors text-sm font-medium"
+                            className="flex items-center gap-2 text-white/70 hover:text-red-400 transition-colors text-sm font-medium cursor-pointer"
                         >
                             <LogOut size={16} />
                             <span>Logout</span>
