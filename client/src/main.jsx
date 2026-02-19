@@ -9,8 +9,8 @@ import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 
-// Force dark mode for now as per plan
-document.documentElement.classList.add('dark');
+// Dark mode removed
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

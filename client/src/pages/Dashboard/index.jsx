@@ -24,14 +24,7 @@ export default function Dashboard() {
             transition={{ duration: 0.5 }}
             className="space-y-6"
         >
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-[#FF9933] via-white to-[#138808] bg-clip-text text-transparent">
-                    Dashboard
-                </h1>
-                <div className="text-sm text-muted-foreground">
-                    Current View: <span className="text-[#FF9933] font-medium">{user?.role}</span>
-                </div>
-            </div>
+
 
             {renderDashboard()}
         </motion.div>

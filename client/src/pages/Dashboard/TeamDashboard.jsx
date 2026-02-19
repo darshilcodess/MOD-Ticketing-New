@@ -52,50 +52,84 @@ export default function TeamDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-orange-500/10 text-orange-500">
-                    <Briefcase size={24} />
-                </div>
+            {/* Header */}
+            <div className="flex justify-between items-center bg-white/30 backdrop-blur-xl p-6 rounded-2xl border border-white/40 shadow-xl">
                 <div>
-                    <h2 className="text-xl font-semibold text-foreground">Assigned Tasks</h2>
-                    <p className="text-sm text-muted-foreground">Resolve tickets assigned to your team</p>
+                    <h1 className="text-2xl font-bold text-slate-800 drop-shadow-sm">
+                        Team Dashboard
+                    </h1>
+                    <p className="text-slate-600">Manage assigned tickets and track resolution</p>
+                </div>
+                <div className="flex gap-2">
+                    <span className="px-3 py-1 bg-white/50 rounded-full text-xs font-bold text-slate-700 border border-white/20 shadow-sm flex items-center gap-2">
+                        <Briefcase size={14} className="text-orange-600" />
+                        {assignedTickets.length} Pending Actions
+                    </span>
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <AnimatePresence>
-                    {assignedTickets.map(ticket => (
-                        <Card key={ticket.id} className="border-orange-500/20 bg-orange-950/10 hover:bg-orange-950/20 transition-colors">
-                            <CardHeader className="pb-3">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle className="text-lg bg-none text-orange-100">{ticket.title}</CardTitle>
-                                    <span className="px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 text-xs font-medium border border-orange-500/20">
-                                        {ticket.priority}
-                                    </span>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-gray-400 mb-6">
-                                    {ticket.description}
-                                </p>
-                                <Button
-                                    onClick={() => setResolvingTicket(ticket)}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/20"
-                                >
-                                    <CheckCircle size={16} className="mr-2" /> Mark Resolved
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </AnimatePresence>
-
-                {assignedTickets.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center p-12 text-muted-foreground bg-white/5 rounded-xl border border-dashed border-white/10">
-                        <CheckCircle size={48} className="mb-4 opacity-50" />
-                        <p>No pending tasks assigned.</p>
+            {/* Assigned Tasks Section */}
+            <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg min-h-[400px]">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg shadow-green-500/30"></div>
+                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Your Assignments</h2>
                     </div>
-                )}
-            </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <AnimatePresence>
+                        {assignedTickets.map(ticket => (
+                            <Card
+                                key={ticket.id}
+                                className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 shadow-sm"
+                            >
+                                <div className={`h-1 w-full bg-gradient-to-r ${ticket.priority === 'CRITICAL' ? 'from-red-500 to-red-600' :
+                                        ticket.priority === 'HIGH' ? 'from-orange-500 to-orange-600' :
+                                            ticket.priority === 'MEDIUM' ? 'from-yellow-500 to-yellow-600' :
+                                                'from-blue-500 to-blue-600'
+                                    }`} />
+
+                                <CardHeader className="pb-3 pt-4">
+                                    <div className="flex justify-between items-start">
+                                        <CardTitle className="text-lg font-bold text-slate-800 line-clamp-1">{ticket.title}</CardTitle>
+                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${ticket.priority === 'CRITICAL' ? 'bg-red-50 text-red-600 border-red-200' :
+                                                ticket.priority === 'HIGH' ? 'bg-orange-50 text-orange-600 border-orange-200' :
+                                                    ticket.priority === 'MEDIUM' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                                        'bg-blue-50 text-blue-600 border-blue-200'
+                                            }`}>
+                                            {ticket.priority}
+                                        </span>
+                                    </div>
+                                    <CardDescription className="text-xs text-slate-400 font-medium">
+                                        ID: #{ticket.id} • Status: <span className="text-blue-600 font-bold">{ticket.status}</span>
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-slate-600 mb-6 line-clamp-3 leading-relaxed">
+                                        {ticket.description}
+                                    </p>
+                                    <Button
+                                        onClick={() => setResolvingTicket(ticket)}
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 group-hover:scale-[1.02] transition-transform duration-200 border-none"
+                                    >
+                                        <CheckCircle size={16} className="mr-2" /> Mark Resolved
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </AnimatePresence>
+
+                    {assignedTickets.length === 0 && (
+                        <div className="col-span-full py-16 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
+                            <div className="inline-flex p-4 rounded-full bg-slate-100 mb-3 text-slate-400 shadow-inner">
+                                <Briefcase size={32} />
+                            </div>
+                            <p className="font-medium">No pending tasks assigned to your team.</p>
+                        </div>
+                    )}
+                </div>
+            </section>
 
             <div className="mt-8">
                 <ActivityHistory tickets={tickets} />
@@ -107,36 +141,37 @@ export default function TeamDashboard() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50"
                     >
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             className="w-full max-w-lg"
                         >
-                            <Card className="border-white/10 bg-[#0F172A]">
+                            <Card className="border border-white/60 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
+                                <div className="h-2 bg-gradient-to-r from-green-500 via-white to-orange-600"></div>
                                 <CardHeader>
-                                    <CardTitle>Resolve Ticket</CardTitle>
-                                    <CardDescription>Provide details on how the issue was resolved.</CardDescription>
+                                    <CardTitle className="text-2xl font-bold text-slate-900">Resolve Ticket</CardTitle>
+                                    <CardDescription className="text-slate-500">Provide details on how the issue was resolved.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <form onSubmit={handleResolve} className="space-y-4">
+                                    <form onSubmit={handleResolve} className="space-y-6">
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium text-gray-200">Resolution Notes</label>
+                                            <label className="text-sm font-semibold text-slate-700">Resolution Notes</label>
                                             <textarea
-                                                className="w-full min-h-[150px] rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                placeholder="Describe the solution..."
+                                                className="w-full min-h-[150px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition-all focus-visible:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 resize-none"
+                                                placeholder="Describe the solution implementation..."
                                                 value={resolutionNotes}
                                                 onChange={e => setResolutionNotes(e.target.value)}
                                                 required
                                             />
                                         </div>
-                                        <div className="flex justify-end gap-3 pt-4">
-                                            <Button type="button" variant="ghost" onClick={() => setResolvingTicket(null)}>
+                                        <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-4">
+                                            <Button type="button" variant="ghost" onClick={() => setResolvingTicket(null)} className="hover:bg-slate-100 text-slate-600">
                                                 Cancel
                                             </Button>
-                                            <Button type="submit" variant="default" className="bg-green-600 hover:bg-green-700">
+                                            <Button type="submit" variant="default" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg shadow-green-600/20">
                                                 Submit Resolution
                                             </Button>
                                         </div>
