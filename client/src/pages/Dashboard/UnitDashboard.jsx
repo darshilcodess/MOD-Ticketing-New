@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
+import ActivityHistory from '../../components/ActivityHistory';
 
 export default function UnitDashboard() {
     const [tickets, setTickets] = useState([]);
@@ -121,6 +122,10 @@ export default function UnitDashboard() {
                         </Card>
                     ))}
                 </AnimatePresence>
+            </div>
+
+            <div className="mt-8">
+                <ActivityHistory tickets={tickets} />
             </div>
 
             <AnimatePresence>
