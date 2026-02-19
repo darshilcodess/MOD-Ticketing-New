@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, Briefcase } from 'lucide-react';
+import ActivityHistory from '../../components/ActivityHistory';
 
 export default function TeamDashboard() {
     const [tickets, setTickets] = useState([]);
@@ -17,7 +18,8 @@ export default function TeamDashboard() {
 
     const fetchTickets = async () => {
         try {
-            const { data } = await api.get('/tickets/?status=ALLOCATED');
+            // Fetch all tickets to show history, will filter for assigned tasks
+            const { data } = await api.get('/tickets/');
             setTickets(data);
         } catch (error) {
             console.error("Error fetching tickets", error);
@@ -25,6 +27,9 @@ export default function TeamDashboard() {
             setLoading(false);
         }
     };
+
+    // Filter for tickets that are currently allocated/assigned to the team for action
+    const assignedTickets = tickets.filter(t => t.status === 'ALLOCATED');
 
     const handleResolve = async (e) => {
         e.preventDefault();
@@ -59,7 +64,7 @@ export default function TeamDashboard() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <AnimatePresence>
-                    {tickets.map(ticket => (
+                    {assignedTickets.map(ticket => (
                         <Card key={ticket.id} className="border-orange-500/20 bg-orange-950/10 hover:bg-orange-950/20 transition-colors">
                             <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start">
@@ -84,12 +89,16 @@ export default function TeamDashboard() {
                     ))}
                 </AnimatePresence>
 
-                {tickets.length === 0 && (
+                {assignedTickets.length === 0 && (
                     <div className="col-span-full flex flex-col items-center justify-center p-12 text-muted-foreground bg-white/5 rounded-xl border border-dashed border-white/10">
                         <CheckCircle size={48} className="mb-4 opacity-50" />
                         <p>No pending tasks assigned.</p>
                     </div>
                 )}
+            </div>
+
+            <div className="mt-8">
+                <ActivityHistory tickets={tickets} />
             </div>
 
             <AnimatePresence>
