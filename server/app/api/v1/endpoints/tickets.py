@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.api import deps
+from app import deps
 from app.schemas.ticket import Ticket, TicketCreate, TicketUpdate, TicketAllocate, TicketResolve 
 from app.models.ticket import Ticket as TicketModel, TicketStatus
 from app.models.user import User as UserModel, UserRole
