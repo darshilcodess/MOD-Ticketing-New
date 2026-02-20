@@ -37,3 +37,6 @@ class Ticket(Base):
     creator = relationship("User", back_populates="tickets_created", foreign_keys=[created_by_id])
     assigned_team = relationship("Team", back_populates="tickets")
     resolver = relationship("User", back_populates="tickets_resolved", foreign_keys=[resolved_by_id])
+    
+    comments = relationship("Comment", back_populates="ticket", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="ticket")

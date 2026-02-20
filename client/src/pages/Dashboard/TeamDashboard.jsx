@@ -33,9 +33,12 @@ export default function TeamDashboard() {
     // Filter for tickets that are currently allocated/assigned to the team for action
     const assignedTickets = tickets.filter(t => t.status === 'ALLOCATED');
 
+    const [resolveError, setResolveError] = useState('');
+
     const handleResolve = async (e) => {
         e.preventDefault();
         if (!resolvingTicket) return;
+        setResolveError('');
         try {
             await api.patch(`/tickets/${resolvingTicket.id}/resolve`, { resolution_notes: resolutionNotes });
             setResolvingTicket(null);
@@ -43,6 +46,7 @@ export default function TeamDashboard() {
             fetchTickets();
         } catch (error) {
             console.error("Failed to resolve", error);
+            setResolveError(error?.response?.data?.detail || 'Failed to resolve ticket. Please try again.');
         }
     };
 
@@ -117,7 +121,7 @@ export default function TeamDashboard() {
                                         {ticket.description}
                                     </p>
                                     <Button
-                                        onClick={() => setResolvingTicket(ticket)}
+                                        onClick={(e) => { e.stopPropagation(); setResolvingTicket(ticket); }}
                                         className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 group-hover:scale-[1.02] transition-transform duration-200 border-none"
                                     >
                                         <CheckCircle size={16} className="mr-2" /> Mark Resolved
@@ -174,8 +178,13 @@ export default function TeamDashboard() {
                                                 required
                                             />
                                         </div>
+                                        {resolveError && (
+                                            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                                                {resolveError}
+                                            </div>
+                                        )}
                                         <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-4">
-                                            <Button type="button" variant="ghost" onClick={() => setResolvingTicket(null)} className="hover:bg-slate-100 text-slate-600">
+                                            <Button type="button" variant="ghost" onClick={() => { setResolvingTicket(null); setResolveError(''); }} className="hover:bg-slate-100 text-slate-600">
                                                 Cancel
                                             </Button>
                                             <Button type="submit" variant="default" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg shadow-green-600/20">

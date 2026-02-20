@@ -5,8 +5,11 @@ from app import deps
 from app.schemas.ticket import Ticket, TicketCreate, TicketUpdate, TicketAllocate, TicketResolve 
 from app.models.ticket import Ticket as TicketModel, TicketStatus
 from app.models.user import User as UserModel, UserRole
+from app.models.notification import Notification
 
 router = APIRouter()
+
+# ... (read_tickets remains unchanged)
 
 @router.get("/", response_model=List[Ticket])
 def read_tickets(
@@ -61,6 +64,18 @@ def create_ticket(
     db.commit()
     db.refresh(ticket)
     
+    # Notify G1 users
+    g1_users = db.query(UserModel).filter(UserModel.role == UserRole.G1).all()
+    for g1 in g1_users:
+        notification = Notification(
+            recipient_id=g1.id,
+            ticket_id=ticket.id,
+            message=f"New ticket created by {current_user.full_name}: {ticket.title}"
+        )
+        db.add(notification)
+    
+    db.commit()
+    
     return ticket
 
 @router.get("/{ticket_id}", response_model=Ticket)
@@ -77,13 +92,11 @@ def read_ticket(
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     
-    # Check permissions
+    # Check permissions logic (simplified for brevity, assume same as before)
     if current_user.role == UserRole.UNIT and ticket.created_by_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     if current_user.role == UserRole.TEAM and ticket.assigned_team_id != current_user.team_id:
-        # Assuming team members can only see tickets assigned to their team? 
-        # Or maybe they can see all? Strict for now.
         raise HTTPException(status_code=403, detail="Not enough permissions")
         
     return ticket
@@ -114,6 +127,28 @@ def allocate_ticket(
     db.add(ticket)
     db.commit()
     db.refresh(ticket)
+    
+    # Notify Team members
+    team_members = db.query(UserModel).filter(UserModel.team_id == allocation.team_id).all()
+    for member in team_members:
+        notification = Notification(
+            recipient_id=member.id,
+            ticket_id=ticket.id,
+            message=f"Ticket allocated to your team: {ticket.title}"
+        )
+        db.add(notification)
+        
+    # Notify Unit (Creator)
+    if ticket.created_by_id:
+        notification_unit = Notification(
+            recipient_id=ticket.created_by_id,
+            ticket_id=ticket.id,
+            message=f"Your ticket '{ticket.title}' has been allocated to a team."
+        )
+        db.add(notification_unit)
+        
+    db.commit()
+    
     return ticket
 
 @router.patch("/{ticket_id}/resolve", response_model=Ticket)
@@ -144,6 +179,28 @@ def resolve_ticket(
     db.add(ticket)
     db.commit()
     db.refresh(ticket)
+    
+    # Notify G1
+    g1_users = db.query(UserModel).filter(UserModel.role == UserRole.G1).all()
+    for g1 in g1_users:
+        notification = Notification(
+            recipient_id=g1.id,
+            ticket_id=ticket.id,
+            message=f"Ticket resolved by {current_user.full_name}: {ticket.title}"
+        )
+        db.add(notification)
+        
+    # Notify Unit (Creator)
+    if ticket.created_by_id:
+        notification_unit = Notification(
+            recipient_id=ticket.created_by_id,
+            ticket_id=ticket.id,
+            message=f"Your ticket '{ticket.title}' has been resolved."
+        )
+        db.add(notification_unit)
+        
+    db.commit()
+
     return ticket
 
 @router.patch("/{ticket_id}/close", response_model=Ticket)

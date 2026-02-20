@@ -1,8 +1,5 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import { User, Bell } from 'lucide-react';
-import { Button } from './ui/Button';
-import logo from '../assets/images/logo.png'; // Import local logo
+import logo from '../assets/images/logo.png';
 
 const Header = () => {
     return (
