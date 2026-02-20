@@ -15,11 +15,6 @@ export default function TicketDetails() {
     useEffect(() => {
         const fetchTicket = async () => {
             try {
-                // Fetch all tickets and find the one matching the ID
-                // Ideally this should be a direct API call like api.get(`/tickets/${id}`)
-                // But based on UnitDashboard, we might need to filter from all if endpoint doesn't exist
-                // Let's try direct first, fallback to finding if needed.
-                // Actually, standard REST usually supports get by ID.
                 const { data } = await api.get(`/tickets/${id}`);
                 setTicket(data);
             } catch (error) {
@@ -32,11 +27,31 @@ export default function TicketDetails() {
         fetchTicket();
     }, [id]);
 
+    const handleApprove = async () => {
+        try {
+            await api.patch(`/tickets/${id}/close`);
+            // Refresh ticket data
+            const { data } = await api.get(`/tickets/${id}`);
+            setTicket(data);
+        } catch (error) {
+            console.error("Failed to approve ticket", error);
+        }
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'OPEN': return 'text-blue-600 bg-blue-50 border-blue-200';
-            case 'RESOLVED': return 'text-green-600 bg-green-50 border-green-200';
+            case 'ALLOCATED': return 'text-orange-600 bg-orange-50 border-orange-200';
+            case 'RESOLVED': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+            case 'CLOSED': return 'text-green-600 bg-green-50 border-green-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        switch (status) {
+            case 'RESOLVED': return 'PENDING REVIEW';
+            default: return status;
         }
     };
 
@@ -91,21 +106,31 @@ export default function TicketDetails() {
                                         {ticket.priority} PRIORITY
                                     </span>
                                     <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wider border ${getStatusColor(ticket.status)}`}>
-                                        {ticket.status}
+                                        {getStatusLabel(ticket.status)}
                                     </span>
                                 </div>
                                 <CardTitle className="text-3xl font-bold text-slate-800 leading-tight">
                                     {ticket.title}
                                 </CardTitle>
                             </div>
-                            <div className="text-right text-sm text-slate-500 space-y-1">
-                                <div className="flex items-center justify-end gap-2">
-                                    <Clock size={14} /> Created: {new Date(ticket.created_at).toLocaleString()}
-                                </div>
-                                {ticket.updated_at && (
-                                    <div className="flex items-center justify-end gap-2 text-slate-400">
-                                        Last Updated: {new Date(ticket.updated_at).toLocaleString()}
+                            <div className="flex flex-col gap-2">
+                                <div className="text-right text-sm text-slate-500 space-y-1">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <Clock size={14} /> Created: {new Date(ticket.created_at).toLocaleString()}
                                     </div>
+                                    {ticket.updated_at && (
+                                        <div className="flex items-center justify-end gap-2 text-slate-400">
+                                            Last Updated: {new Date(ticket.updated_at).toLocaleString()}
+                                        </div>
+                                    )}
+                                </div>
+                                {ticket.status === 'RESOLVED' && (
+                                    <Button
+                                        onClick={handleApprove}
+                                        className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                                    >
+                                        <CheckCircle2 className="w-4 h-4 mr-2" /> Approve Resolution
+                                    </Button>
                                 )}
                             </div>
                         </div>
@@ -164,6 +189,56 @@ export default function TicketDetails() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* History Timeline Section */}
+            {ticket.history && ticket.history.length > 0 && (
+                <div className="max-w-4xl mx-auto">
+                    <Card className="border border-white/60 bg-white/70 backdrop-blur-xl shadow-xl overflow-hidden">
+                        <div className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500" />
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <Clock size={18} className="text-indigo-500" /> Issue History
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ol className="relative border-l border-slate-200 ml-3 space-y-6 py-2">
+                                {ticket.history.map((event, idx) => {
+                                    const eventColors = {
+                                        CREATED: { dot: 'bg-blue-500', text: 'text-blue-700', label: '🆕 Created' },
+                                        ALLOCATED: { dot: 'bg-orange-500', text: 'text-orange-700', label: '📋 Allocated to Team' },
+                                        MARKED_FOR_REVIEW: { dot: 'bg-yellow-500', text: 'text-yellow-700', label: '🔍 Marked for Review' },
+                                        APPROVED_AND_CLOSED: { dot: 'bg-green-500', text: 'text-green-700', label: '✅ Approved & Closed' },
+                                        REALLOCATED_TO_G1: { dot: 'bg-red-500', text: 'text-red-700', label: '⬆ Sent back to G1' },
+                                        REALLOCATED_TO_SAME_TEAM: { dot: 'bg-amber-500', text: 'text-amber-700', label: '↩ Returned to Team' },
+                                    };
+                                    const style = eventColors[event.event] || { dot: 'bg-slate-400', text: 'text-slate-600', label: event.event };
+                                    return (
+                                        <li key={idx} className="ml-6">
+                                            <span className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ${style.dot} ring-4 ring-white shadow-sm`} />
+                                            <div className="flex flex-wrap items-baseline gap-x-2 mb-1">
+                                                <span className={`text-xs font-bold uppercase ${style.text}`}>{style.label}</span>
+                                                <span className="text-[10px] text-slate-400">
+                                                    {new Date(event.timestamp).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-600">
+                                                By <span className="font-semibold">{event.actor}</span>
+                                                {event.role && <span className="text-slate-400"> ({event.role})</span>}
+                                                {event.team_name && <span> → <span className="font-semibold text-orange-700">{event.team_name}</span></span>}
+                                            </p>
+                                            {event.notes && (
+                                                <p className="mt-1 text-[11px] text-slate-500 italic bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                                                    "{event.notes}"
+                                                </p>
+                                            )}
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* Comments Section */}
             <div className="max-w-4xl mx-auto">

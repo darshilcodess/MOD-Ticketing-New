@@ -122,9 +122,9 @@ export default function TeamDashboard() {
                                     </p>
                                     <Button
                                         onClick={(e) => { e.stopPropagation(); setResolvingTicket(ticket); }}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 group-hover:scale-[1.02] transition-transform duration-200 border-none"
+                                        className="w-full bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-600/20 group-hover:scale-[1.02] transition-transform duration-200 border-none"
                                     >
-                                        <CheckCircle size={16} className="mr-2" /> Mark Resolved
+                                        <CheckCircle size={16} className="mr-2" /> Mark for Review
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -163,8 +163,8 @@ export default function TeamDashboard() {
                             <Card className="border border-white/60 bg-white/90 backdrop-blur-2xl shadow-2xl overflow-hidden">
                                 <div className="h-2 bg-gradient-to-r from-green-500 via-white to-orange-600"></div>
                                 <CardHeader>
-                                    <CardTitle className="text-2xl font-bold text-slate-900">Resolve Ticket</CardTitle>
-                                    <CardDescription className="text-slate-500">Provide details on how the issue was resolved.</CardDescription>
+                                    <CardTitle className="text-2xl font-bold text-slate-900">Mark for Review</CardTitle>
+                                    <CardDescription className="text-slate-500">Provide details on the resolution for unit approval.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <form onSubmit={handleResolve} className="space-y-6">
@@ -188,7 +188,7 @@ export default function TeamDashboard() {
                                                 Cancel
                                             </Button>
                                             <Button type="submit" variant="default" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg shadow-green-600/20">
-                                                Submit Resolution
+                                                Submit for Review
                                             </Button>
                                         </div>
                                     </form>
