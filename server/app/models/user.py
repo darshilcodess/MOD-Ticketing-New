@@ -23,3 +23,6 @@ class User(Base):
     team = relationship("Team", back_populates="members")
     tickets_created = relationship("Ticket", back_populates="creator", foreign_keys="Ticket.created_by_id")
     tickets_resolved = relationship("Ticket", back_populates="resolver", foreign_keys="Ticket.resolved_by_id")
+    
+    comments = relationship("Comment", back_populates="user")
+    notifications = relationship("Notification", back_populates="recipient")

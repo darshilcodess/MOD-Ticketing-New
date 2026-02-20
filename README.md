@@ -62,6 +62,10 @@ docker compose exec backend python -m app.utils.seed
 docker compose exec backend python -m app.utils.seed --force
 ```
 
+```
+docker compose exec postgres psql -U postgres -d mod_ticketing -c "\dt"
+```
+
 ### Default Test Accounts
 
 | Role  | Email                      | Password   |

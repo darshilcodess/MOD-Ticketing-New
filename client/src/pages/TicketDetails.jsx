@@ -4,6 +4,7 @@ import api from '../services/api';
 import { ArrowLeft, Clock, CheckCircle2, AlertCircle, Building, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import TicketComments from '../components/TicketComments';
 
 export default function TicketDetails() {
     const { id } = useParams();
@@ -162,6 +163,11 @@ export default function TicketDetails() {
                         )}
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Comments Section */}
+            <div className="max-w-4xl mx-auto">
+                <TicketComments ticketId={id} />
             </div>
         </div>
     );
