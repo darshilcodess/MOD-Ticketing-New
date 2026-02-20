@@ -66,14 +66,14 @@ docker compose exec backend python -m app.utils.seed --force
 
 | Role  | Email                      | Password   |
 |-------|----------------------------|------------|
-| G1    | g1.admin@example.com       | admin123   |
-| Admin | superadmin@example.com     | super123   |
-| Unit  | unit.alpha@example.com     | unit123    |
-| Team  | elec.worker1@example.com   | work123    |
+| G1    | g1.admin@example.com       | pass123    |
+| Admin | superadmin@example.com     | pass123    |
+| Unit  | unit.alpha@example.com     | pass123    |
+| Team  | elec.worker1@example.com   | pass123    |
 
 ## View database in Docker
 
 ```bash
-docker exec -it mod_db psql -U postgres -d mod_ticketing
+docker compose exec postgres psql -U postgres -d mod_ticketing
 \dt
 ```
