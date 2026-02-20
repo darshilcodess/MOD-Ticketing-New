@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import { useAuth } from './context/AuthContext';
 import { LogOut, Bell } from 'lucide-react';
 
 const Layout = ({ children }) => {
     const { logout } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <div className="flex min-h-screen bg-[#FDFBF7] text-foreground font-sans selection:bg-orange-500/30 relative">
@@ -23,7 +25,10 @@ const Layout = ({ children }) => {
                     <div className="flex items-center gap-6">
                         <span className="text-white/80 text-sm font-medium">Jai Hind, User</span>
                         <div className="h-4 w-px bg-white/20"></div>
-                        <button className="text-white/70 hover:text-orange-400 transition-colors cursor-pointer">
+                        <button
+                            onClick={() => navigate('/notifications')}
+                            className="text-white/70 hover:text-orange-400 transition-colors cursor-pointer"
+                        >
                             <Bell size={18} />
                         </button>
                         <div className="h-4 w-px bg-white/20"></div>
