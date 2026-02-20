@@ -1,0 +1,45 @@
+erDiagram
+
+    %% =========================
+    %% Entities
+    %% =========================
+
+    USER {
+        int id PK
+        string email
+        string hashed_password
+        string full_name
+        string role "UNIT, G1, TEAM, ADMIN"
+        bool is_active
+        int team_id FK "Nullable"
+    }
+
+    TEAM {
+        int id PK
+        string name "Unique"
+        string description
+    }
+
+    TICKET {
+        int id PK
+        string title
+        text description
+        string status "OPEN, ALLOCATED, RESOLVED, CLOSED"
+        string priority "LOW, MEDIUM, HIGH, CRITICAL"
+        int created_by_id FK
+        int assigned_team_id FK "Nullable"
+        int resolved_by_id FK "Nullable"
+        text resolution_notes "Nullable"
+        datetime created_at
+        datetime updated_at
+    }
+
+    %% =========================
+    %% Relationships
+    %% =========================
+
+    TEAM ||--o{ USER : has_members
+    TEAM ||--o{ TICKET : assigned_tickets
+
+    USER ||--o{ TICKET : creates
+    USER ||--o{ TICKET : resolves

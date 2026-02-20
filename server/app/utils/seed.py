@@ -33,23 +33,23 @@ TEAMS = [
 
 USERS = [
     # G1 / Administrators
-    {"email": "g1.admin@example.com",   "password": "admin123",  "full_name": "Alice Admin",       "role": UserRole.G1,    "team": None},
-    {"email": "g1.ops@example.com",     "password": "ops123",    "full_name": "Bob Operations",    "role": UserRole.G1,    "team": None},
+    {"email": "g1.admin@example.com",   "password": "pass123",   "full_name": "Aditi Sharma",      "role": UserRole.G1,    "team": None},
+    {"email": "g1.ops@example.com",     "password": "pass123",   "full_name": "Balbir Singh",      "role": UserRole.G1,    "team": None},
     # Admin role
-    {"email": "superadmin@example.com", "password": "super123",  "full_name": "Super Admin",       "role": UserRole.ADMIN, "team": None},
+    {"email": "superadmin@example.com", "password": "pass123",   "full_name": "Suresh Raina",      "role": UserRole.ADMIN, "team": None},
     # Unit users (raise tickets)
-    {"email": "unit.alpha@example.com", "password": "unit123",   "full_name": "Carol Alpha",       "role": UserRole.UNIT,  "team": None},
-    {"email": "unit.beta@example.com",  "password": "unit123",   "full_name": "David Beta",        "role": UserRole.UNIT,  "team": None},
-    {"email": "unit.gamma@example.com", "password": "unit123",   "full_name": "Eve Gamma",         "role": UserRole.UNIT,  "team": None},
-    {"email": "unit.delta@example.com", "password": "unit123",   "full_name": "Frank Delta",       "role": UserRole.UNIT,  "team": None},
+    {"email": "unit.alpha@example.com", "password": "pass123",   "full_name": "Chirag Patel",      "role": UserRole.UNIT,  "team": None},
+    {"email": "unit.beta@example.com",  "password": "pass123",   "full_name": "Deepika Padukone",  "role": UserRole.UNIT,  "team": None},
+    {"email": "unit.gamma@example.com", "password": "pass123",   "full_name": "Esha Gupta",        "role": UserRole.UNIT,  "team": None},
+    {"email": "unit.delta@example.com", "password": "pass123",   "full_name": "Farhan Akhtar",     "role": UserRole.UNIT,  "team": None},
     # Team workers
-    {"email": "elec.worker1@example.com",  "password": "work123", "full_name": "George Watt",      "role": UserRole.TEAM, "team": "Electrical"},
-    {"email": "elec.worker2@example.com",  "password": "work123", "full_name": "Hannah Volt",      "role": UserRole.TEAM, "team": "Electrical"},
-    {"email": "plumb.worker1@example.com", "password": "work123", "full_name": "Ian Pipe",         "role": UserRole.TEAM, "team": "Plumbing"},
-    {"email": "plumb.worker2@example.com", "password": "work123", "full_name": "Jane Flow",        "role": UserRole.TEAM, "team": "Plumbing"},
-    {"email": "hvac.worker1@example.com",  "password": "work123", "full_name": "Kevin Cool",       "role": UserRole.TEAM, "team": "HVAC"},
-    {"email": "it.worker1@example.com",    "password": "work123", "full_name": "Laura Code",       "role": UserRole.TEAM, "team": "IT Support"},
-    {"email": "civil.worker1@example.com", "password": "work123", "full_name": "Mike Build",       "role": UserRole.TEAM, "team": "Civil Works"},
+    {"email": "elec.worker1@example.com",  "password": "pass123", "full_name": "Gaurav Taneja",    "role": UserRole.TEAM, "team": "Electrical"},
+    {"email": "elec.worker2@example.com",  "password": "pass123", "full_name": "Hina Khan",        "role": UserRole.TEAM, "team": "Electrical"},
+    {"email": "plumb.worker1@example.com", "password": "pass123", "full_name": "Ishaan Khatter",   "role": UserRole.TEAM, "team": "Plumbing"},
+    {"email": "plumb.worker2@example.com", "password": "pass123", "full_name": "Janhvi Kapoor",    "role": UserRole.TEAM, "team": "Plumbing"},
+    {"email": "hvac.worker1@example.com",  "password": "pass123", "full_name": "Kartik Aaryan",    "role": UserRole.TEAM, "team": "HVAC"},
+    {"email": "it.worker1@example.com",    "password": "pass123", "full_name": "Lata Mangeshkar",  "role": UserRole.TEAM, "team": "IT Support"},
+    {"email": "civil.worker1@example.com", "password": "pass123", "full_name": "Manish Paul",      "role": UserRole.TEAM, "team": "Civil Works"},
 ]
 
 TICKETS = [
@@ -60,6 +60,11 @@ TICKETS = [
      "priority": TicketPriority.HIGH,    "status": TicketStatus.ALLOCATED, "creator_email": "unit.beta@example.com",   "team": "Electrical"},
     {"title": "Flickering lights in corridor B",   "description": "Lights flicker intermittently in the east corridor B.",
      "priority": TicketPriority.LOW,     "status": TicketStatus.RESOLVED,  "creator_email": "unit.alpha@example.com",  "team": "Electrical"},
+    {"title": "Exposed wiring near Elevator",      "description": "Found some exposed wires near the main elevator lobby on ground floor.",
+     "priority": TicketPriority.CRITICAL,"status": TicketStatus.OPEN,      "creator_email": "unit.gamma@example.com",  "team": None},
+    {"title": "Switchboard spark in Conf Room",    "description": "Switchboard sparked when plugging in projector.",
+     "priority": TicketPriority.HIGH,    "status": TicketStatus.ALLOCATED, "creator_email": "unit.delta@example.com",  "team": "Electrical"},
+
     # Plumbing tickets
     {"title": "Water leak under kitchen sink",     "description": "Slow drip under canteen kitchen sink, possible pipe joint failure.",
      "priority": TicketPriority.MEDIUM,  "status": TicketStatus.OPEN,      "creator_email": "unit.gamma@example.com",  "team": None},
@@ -67,21 +72,44 @@ TICKETS = [
      "priority": TicketPriority.HIGH,    "status": TicketStatus.ALLOCATED, "creator_email": "unit.delta@example.com",  "team": "Plumbing"},
     {"title": "No hot water in shower block",      "description": "Hot water system not functioning since morning.",
      "priority": TicketPriority.MEDIUM,  "status": TicketStatus.CLOSED,    "creator_email": "unit.beta@example.com",   "team": "Plumbing"},
+    {"title": "Leaking tap in gents washroom",     "description": "Tap 3 in the gents washroom is constantly leaking water.",
+     "priority": TicketPriority.LOW,     "status": TicketStatus.OPEN,      "creator_email": "unit.alpha@example.com",  "team": None},
+    {"title": "Water pressure low on 4th floor",   "description": "Water pressure is extremely low in the pantry area.",
+     "priority": TicketPriority.MEDIUM,  "status": TicketStatus.ALLOCATED, "creator_email": "unit.gamma@example.com",  "team": "Plumbing"},
+
     # HVAC tickets
     {"title": "AC not cooling in Server Room",     "description": "Server room temperature rising. AC unit running but not cooling.",
      "priority": TicketPriority.HIGH,    "status": TicketStatus.ALLOCATED, "creator_email": "unit.alpha@example.com",  "team": "HVAC"},
     {"title": "Ventilation noise - Floor 3",       "description": "Loud rattling noise from HVAC vents on floor 3.",
      "priority": TicketPriority.LOW,     "status": TicketStatus.OPEN,      "creator_email": "unit.gamma@example.com",  "team": None},
+    {"title": "AC unit leaking water - Lobby",     "description": "AC unit in the main lobby is dripping water onto the floor.",
+     "priority": TicketPriority.MEDIUM,  "status": TicketStatus.OPEN,      "creator_email": "unit.beta@example.com",   "team": None},
+    {"title": "Heating not working in Office 101", "description": "Room is very cold, heating system seems to be off.",
+     "priority": TicketPriority.MEDIUM,  "status": TicketStatus.ALLOCATED, "creator_email": "unit.delta@example.com",  "team": "HVAC"},
+
     # IT tickets
     {"title": "Network switch failure - Wing C",   "description": "Network switch in Wing C has failed, 15 machines offline.",
      "priority": TicketPriority.HIGH,    "status": TicketStatus.RESOLVED,  "creator_email": "unit.delta@example.com",  "team": "IT Support"},
     {"title": "Printer offline - Admin block",     "description": "HP LaserJet shows offline status despite being powered on.",
      "priority": TicketPriority.LOW,     "status": TicketStatus.OPEN,      "creator_email": "unit.beta@example.com",   "team": None},
+    {"title": "WiFi disconnected in Meeting Room", "description": "Unable to connect to WiFi in Meeting Room 2.",
+     "priority": TicketPriority.HIGH,    "status": TicketStatus.OPEN,      "creator_email": "unit.alpha@example.com",  "team": None},
+    {"title": "Mouse verify sensitive",            "description": "Mouse cursor is jumping around the screen uncontrollably on PC-4.",
+     "priority": TicketPriority.LOW,     "status": TicketStatus.CLOSED,    "creator_email": "unit.gamma@example.com",  "team": "IT Support"},
+    {"title": "Software installation request",     "description": "Need Adobe Photoshop installed on design team PC.",
+     "priority": TicketPriority.LOW,     "status": TicketStatus.ALLOCATED, "creator_email": "unit.beta@example.com",   "team": "IT Support"},
+
     # Civil tickets
     {"title": "Ceiling crack in Meeting Room 1",   "description": "Visible crack appearing in the ceiling, potentially structural.",
      "priority": TicketPriority.MEDIUM,  "status": TicketStatus.ALLOCATED, "creator_email": "unit.alpha@example.com",  "team": "Civil Works"},
     {"title": "Broken door handle - Gate 2",       "description": "Entry door handle broken, security risk.",
      "priority": TicketPriority.MEDIUM,  "status": TicketStatus.CLOSED,    "creator_email": "unit.gamma@example.com",  "team": "Civil Works"},
+    {"title": "Tile loose in main corridor",       "description": "Floor tile is loose and creating a tripping hazard.",
+     "priority": TicketPriority.HIGH,    "status": TicketStatus.OPEN,      "creator_email": "unit.delta@example.com",  "team": None},
+    {"title": "Window pane cracked - Conf Room",   "description": "Window pane in the conference room has a large crack.",
+     "priority": TicketPriority.MEDIUM,  "status": TicketStatus.ALLOCATED, "creator_email": "unit.beta@example.com",   "team": "Civil Works"},
+    {"title": "Paint peeling off - Reception",     "description": "Paint is peeling off the wall near the reception desk.",
+     "priority": TicketPriority.LOW,     "status": TicketStatus.OPEN,      "creator_email": "unit.alpha@example.com",  "team": None},
 ]
 
 

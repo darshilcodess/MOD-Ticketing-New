@@ -1,0 +1,37 @@
+sequenceDiagram
+    autonumber
+
+    actor UR as Unit Representative (User)
+    actor G1 as G1/Admin
+    actor TM as Team Member
+    participant SYS as System (Backend/DB)
+
+    Note over UR,SYS: Phase 1 - Ticket Creation
+    UR->>SYS: Create Ticket (Title, Description, Priority)
+    SYS-->>UR: Ticket Created (Status: OPEN)
+
+    Note over G1,SYS: Phase 2 - Triage & Allocation
+    G1->>SYS: View Open Tickets
+    SYS-->>G1: List of Open Tickets
+    G1->>SYS: Allocate Ticket to Team (e.g., Electrical)
+    SYS-->>G1: Ticket Updated (Status: ALLOCATED)
+
+    Note over TM,SYS: Phase 3 - Resolution
+    TM->>SYS: View Allocated Tickets
+    SYS-->>TM: List of Allocated Tickets
+    TM->>SYS: Add Resolution Notes
+    TM->>SYS: Mark Ticket as Resolved
+    SYS-->>TM: Ticket Updated (Status: RESOLVED)
+
+    Note over UR,SYS: Phase 4 - Verification & Closure
+    UR->>SYS: View Resolved Tickets
+    SYS-->>UR: List of Resolved Tickets
+    UR->>SYS: Verify Fix
+
+    alt Fix Verified
+        UR->>SYS: Close Ticket
+        SYS-->>UR: Ticket Updated (Status: CLOSED)
+    else Fix Not Verified
+        UR->>SYS: Reopen Ticket
+        SYS-->>UR: Ticket Updated (Status: OPEN or ALLOCATED)
+    end
