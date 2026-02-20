@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TicketDetails from './pages/TicketDetails';
+import Notifications from './pages/Notifications';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -25,6 +26,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <TicketDetails />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <Notifications />
             </Layout>
           </ProtectedRoute>
         }
