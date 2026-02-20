@@ -60,6 +60,7 @@ def create_ticket(
     db.add(ticket)
     db.commit()
     db.refresh(ticket)
+    
     return ticket
 
 @router.get("/{ticket_id}", response_model=Ticket)
