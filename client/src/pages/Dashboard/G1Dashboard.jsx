@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ActivityHistory from '../../components/ActivityHistory';
 import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
@@ -7,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Inbox } from 'lucide-react';
 
 export default function G1Dashboard() {
+    const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function G1Dashboard() {
                         <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
                             {pendingTickets.length} PENDING
                         </span>
-                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-orange-600">
+                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-orange-600 cursor-pointer" onClick={() => navigate('/g1/incoming')}>
                             View All <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
                     </div>
@@ -91,7 +93,7 @@ export default function G1Dashboard() {
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <AnimatePresence>
-                        {pendingTickets.map(ticket => (
+                        {pendingTickets.slice(0, 6).map(ticket => (
                             <Card
                                 key={ticket.id}
                                 className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 shadow-sm"

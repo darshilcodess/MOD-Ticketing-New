@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TicketDetails from './pages/TicketDetails';
 import Notifications from './pages/Notifications';
+import AllIncomingRequests from './pages/AllIncomingRequests';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -36,6 +37,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <Notifications />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/g1/incoming"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AllIncomingRequests />
             </Layout>
           </ProtectedRoute>
         }
