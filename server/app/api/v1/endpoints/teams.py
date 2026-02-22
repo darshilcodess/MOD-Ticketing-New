@@ -1,7 +1,7 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.api import deps
+from app import deps
 from app.schemas.team import Team, TeamCreate, TeamUpdate
 from app.models.team import Team as TeamModel
 from app.models.user import User as UserModel, UserRole

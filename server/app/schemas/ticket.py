@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Any
 from datetime import datetime
 from app.models.ticket import TicketStatus, TicketPriority
 from app.schemas.user import User
@@ -35,6 +35,7 @@ class TicketInDBBase(TicketBase):
     assigned_team_id: Optional[int] = None
     resolved_by_id: Optional[int] = None
     resolution_notes: Optional[str] = None
+    history: Optional[List[Any]] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

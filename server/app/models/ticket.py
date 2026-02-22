@@ -1,8 +1,9 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
 import enum
+import datetime as dt
 
 class TicketStatus(str, enum.Enum):
     OPEN = "OPEN"           # Created by Unit
@@ -30,6 +31,7 @@ class Ticket(Base):
     resolved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     resolution_notes = Column(Text, nullable=True)
+    history = Column(JSON, default=list, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -37,3 +39,20 @@ class Ticket(Base):
     creator = relationship("User", back_populates="tickets_created", foreign_keys=[created_by_id])
     assigned_team = relationship("Team", back_populates="tickets")
     resolver = relationship("User", back_populates="tickets_resolved", foreign_keys=[resolved_by_id])
+    
+    comments = relationship("Comment", back_populates="ticket", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="ticket")
+
+    def append_history(self, event: str, actor_name: str, actor_role: str, team_id=None, team_name=None, notes=None):
+        """Append a history event to the ticket's history JSON column."""
+        current = self.history or []
+        current.append({
+            "event": event,
+            "actor": actor_name,
+            "role": actor_role,
+            "team_id": team_id,
+            "team_name": team_name,
+            "notes": notes,
+            "timestamp": dt.datetime.utcnow().isoformat()
+        })
+        self.history = current

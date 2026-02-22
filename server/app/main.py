@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.api import api_router
-from app.core.database import engine, Base
 
-# Create tables
-Base.metadata.create_all(bind=engine)
+# Database schema is managed by Alembic migrations.
+# Run: alembic upgrade head
 
 app = FastAPI(title="Ticket Management System API", version="1.0.0")
 
