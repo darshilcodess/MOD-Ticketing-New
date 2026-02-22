@@ -143,7 +143,7 @@ export default function TeamDashboard() {
             </section >
 
             <div className="mt-8">
-                <ActivityHistory tickets={tickets} />
+                <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
             </div>
 
             <AnimatePresence>

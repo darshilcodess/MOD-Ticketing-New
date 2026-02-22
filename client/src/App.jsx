@@ -8,6 +8,7 @@ import AllAssignments from './pages/AllAssignments';
 import AllPendingReview from './pages/AllPendingReview';
 import AllActiveTickets from './pages/AllActiveTickets';
 import AllResolvedHistory from './pages/AllResolvedHistory';
+import AllActivityTimeline from './pages/AllActivityTimeline';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -68,6 +69,7 @@ function App() {
       <Route path="/unit/pending-review" element={<ProtectedRoute><Layout><AllPendingReview /></Layout></ProtectedRoute>} />
       <Route path="/unit/active-tickets" element={<ProtectedRoute><Layout><AllActiveTickets /></Layout></ProtectedRoute>} />
       <Route path="/unit/resolved-history" element={<ProtectedRoute><Layout><AllResolvedHistory /></Layout></ProtectedRoute>} />
+      <Route path="/activity" element={<ProtectedRoute><Layout><AllActivityTimeline /></Layout></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

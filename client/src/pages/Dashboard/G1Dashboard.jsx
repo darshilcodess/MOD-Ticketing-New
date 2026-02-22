@@ -146,7 +146,7 @@ export default function G1Dashboard() {
             </section>
 
             {/* Activity History Section */}
-            <ActivityHistory tickets={tickets} />
+            <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
 
             <AnimatePresence>
                 {selectedTicket && (
