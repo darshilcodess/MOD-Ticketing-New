@@ -127,7 +127,7 @@ export default function UnitDashboard() {
                         <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
                             {tickets.filter(t => t.status === 'RESOLVED').length} ACTION REQUIRED
                         </span>
-                        <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-yellow-600 cursor-pointer">
+                        <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-yellow-600 cursor-pointer" onClick={() => navigate('/unit/pending-review')}>
                             View All <ArrowRight className="w-3 h-3 ml-1" />
                         </Button>
                     </div>
@@ -135,7 +135,7 @@ export default function UnitDashboard() {
 
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                     <AnimatePresence>
-                        {tickets.filter(t => t.status === 'RESOLVED').map((ticket, i) => (
+                        {tickets.filter(t => t.status === 'RESOLVED').slice(0, 6).map((ticket, i) => (
                             <motion.div
                                 key={ticket.id}
                                 initial={{ opacity: 0, y: 12 }}
@@ -244,9 +244,9 @@ export default function UnitDashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                             <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 text-[10px] font-extrabold border border-orange-200 shadow-sm">
-                                {tickets.filter(t => t.status === 'OPEN').length} PENDING
+                                {tickets.filter(t => t.status === 'OPEN' || t.status === 'ALLOCATED').length} ACTIVE
                             </span>
-                            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-orange-600">
+                            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-orange-600 cursor-pointer" onClick={() => navigate('/unit/active-tickets')}>
                                 View All <ArrowRight className="w-3 h-3 ml-1" />
                             </Button>
                         </div>
@@ -254,7 +254,7 @@ export default function UnitDashboard() {
 
                     <div className="grid gap-3 grid-cols-1">
                         <AnimatePresence>
-                            {tickets.filter(t => t.status === 'OPEN').slice(0, 3).map(ticket => (
+                            {tickets.filter(t => t.status === 'OPEN').slice(0, 5).map(ticket => (
                                 <Card
                                     key={ticket.id}
                                     onClick={() => navigate(`/tickets/${ticket.id}`)}
@@ -309,12 +309,15 @@ export default function UnitDashboard() {
                             <span className="px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-extrabold border border-green-200 shadow-sm">
                                 {tickets.filter(t => t.status === 'CLOSED').length} COMPLETED
                             </span>
+                            <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-green-600 cursor-pointer" onClick={() => navigate('/unit/resolved-history')}>
+                                View All <ArrowRight className="w-3 h-3 ml-1" />
+                            </Button>
                         </div>
                     </div>
 
                     <div className="grid gap-4 grid-cols-1">
                         <AnimatePresence>
-                            {tickets.filter(t => t.status === 'CLOSED').map(ticket => (
+                            {tickets.filter(t => t.status === 'CLOSED').slice(0, 5).map(ticket => (
                                 <Card
                                     key={ticket.id}
                                     onClick={() => navigate(`/tickets/${ticket.id}`)}

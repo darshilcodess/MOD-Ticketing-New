@@ -5,6 +5,9 @@ import TicketDetails from './pages/TicketDetails';
 import Notifications from './pages/Notifications';
 import AllIncomingRequests from './pages/AllIncomingRequests';
 import AllAssignments from './pages/AllAssignments';
+import AllPendingReview from './pages/AllPendingReview';
+import AllActiveTickets from './pages/AllActiveTickets';
+import AllResolvedHistory from './pages/AllResolvedHistory';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -62,6 +65,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/unit/pending-review" element={<ProtectedRoute><Layout><AllPendingReview /></Layout></ProtectedRoute>} />
+      <Route path="/unit/active-tickets" element={<ProtectedRoute><Layout><AllActiveTickets /></Layout></ProtectedRoute>} />
+      <Route path="/unit/resolved-history" element={<ProtectedRoute><Layout><AllResolvedHistory /></Layout></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
