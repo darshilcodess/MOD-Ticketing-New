@@ -116,6 +116,84 @@ export default function UnitDashboard() {
                 </Button>
             </div>
 
+            {/* Pending Review — full width on top */}
+            <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-6 w-1 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full shadow-lg shadow-yellow-500/30"></div>
+                        <h2 className="text-xl font-bold text-slate-800 tracking-tight">Pending Review</h2>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
+                            {tickets.filter(t => t.status === 'RESOLVED').length} ACTION REQUIRED
+                        </span>
+                    </div>
+                </div>
+
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                    <AnimatePresence>
+                        {tickets.filter(t => t.status === 'RESOLVED').map(ticket => (
+                            <Card
+                                key={ticket.id}
+                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                className="group border border-yellow-200 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
+                            >
+                                <div className={`h-1 w-full bg-yellow-500`} />
+                                <CardHeader className="pb-2 pt-3 px-4">
+                                    <div className="flex justify-between items-start gap-4">
+                                        <div className="space-y-1 w-full">
+                                            <div className="flex justify-between items-start">
+                                                <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
+                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-yellow-200 text-yellow-700 bg-yellow-50`}>
+                                                    PENDING REVIEW
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="px-4 pb-3">
+                                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
+                                        {ticket.description}
+                                    </p>
+                                    <div className="p-2 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 mb-3 italic">
+                                        "{ticket.resolution_notes}"
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        onClick={(e) => handleApprove(e, ticket.id)}
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white h-7 text-[10px] font-bold"
+                                    >
+                                        <CheckCircle2 className="w-3 h-3 mr-1" /> Approve &amp; Close
+                                    </Button>
+                                    <div className="grid grid-cols-2 gap-1 mt-1">
+                                        <Button
+                                            size="sm"
+                                            onClick={(e) => handleReallocateToTeam(e, ticket.id)}
+                                            className="bg-orange-100 hover:bg-orange-200 text-orange-800 h-7 text-[9px] font-bold border border-orange-200"
+                                        >
+                                            Reallocate to same Team
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            onClick={(e) => handleReallocateToG1(e, ticket.id)}
+                                            className="bg-red-50 hover:bg-red-100 text-red-700 h-7 text-[9px] font-bold border border-red-200"
+                                        >
+                                            Reallocate to G1
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </AnimatePresence>
+                    {tickets.filter(t => t.status === 'RESOLVED').length === 0 && (
+                        <div className="col-span-full py-8 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
+                            <p className="font-medium text-xs">No resolutions pending your review.</p>
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            {/* Active Tickets | Resolved History — side by side */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Active Tickets Section */}
                 <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg min-h-[350px]">
@@ -180,84 +258,7 @@ export default function UnitDashboard() {
                     </div>
                 </section>
 
-                {/* Pending Review Section */}
-                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg min-h-[350px]">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-6 w-1 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full shadow-lg shadow-yellow-500/30"></div>
-                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Pending Review</h2>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
-                                {tickets.filter(t => t.status === 'RESOLVED').length} ACTION REQUIRED
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="grid gap-3 grid-cols-1">
-                        <AnimatePresence>
-                            {tickets.filter(t => t.status === 'RESOLVED').map(ticket => (
-                                <Card
-                                    key={ticket.id}
-                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
-                                    className="group border border-yellow-200 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
-                                >
-                                    <div className={`h-1 w-full bg-yellow-500`} />
-                                    <CardHeader className="pb-2 pt-3 px-4">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="space-y-1 w-full">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-yellow-200 text-yellow-700 bg-yellow-50`}>
-                                                        PENDING REVIEW
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="px-4 pb-3">
-                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
-                                            {ticket.description}
-                                        </p>
-                                        <div className="p-2 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 mb-3 italic">
-                                            "{ticket.resolution_notes}"
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            onClick={(e) => handleApprove(e, ticket.id)}
-                                            className="w-full bg-green-600 hover:bg-green-700 text-white h-7 text-[10px] font-bold"
-                                        >
-                                            <CheckCircle2 className="w-3 h-3 mr-1" /> Approve &amp; Close
-                                        </Button>
-                                        <div className="grid grid-cols-2 gap-1 mt-1">
-                                            <Button
-                                                size="sm"
-                                                onClick={(e) => handleReallocateToTeam(e, ticket.id)}
-                                                className="bg-orange-100 hover:bg-orange-200 text-orange-800 h-7 text-[9px] font-bold border border-orange-200"
-                                            >
-                                                Reallocate to same Team
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                onClick={(e) => handleReallocateToG1(e, ticket.id)}
-                                                className="bg-red-50 hover:bg-red-100 text-red-700 h-7 text-[9px] font-bold border border-red-200"
-                                            >
-                                                Reallocate to G1
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </AnimatePresence>
-                        {tickets.filter(t => t.status === 'RESOLVED').length === 0 && (
-                            <div className="col-span-full py-8 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
-                                <p className="font-medium text-xs">No resolutions pending your review.</p>
-                            </div>
-                        )}
-                    </div>
-                </section>
-
-                {/* Closed History Section */}
+                {/* Resolved History Section */}
                 <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-5 border border-white/20 shadow-lg min-h-[350px]">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -301,7 +302,6 @@ export default function UnitDashboard() {
                                         <p className="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed">
                                             {ticket.description}
                                         </p>
-
                                         {ticket.resolution_notes && (
                                             <div className="mt-3 p-3 bg-green-50/80 border border-green-200/60 rounded-md text-sm text-green-800">
                                                 <div className="flex items-center gap-2 font-bold mb-1 text-green-700">
