@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import TicketDetails from './pages/TicketDetails';
 import Notifications from './pages/Notifications';
 import AllIncomingRequests from './pages/AllIncomingRequests';
+import AllAssignments from './pages/AllAssignments';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './Layout';
 
@@ -47,6 +48,16 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <AllIncomingRequests />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/team/assignments"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AllAssignments />
             </Layout>
           </ProtectedRoute>
         }

@@ -82,14 +82,14 @@ export default function TeamDashboard() {
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Your Assignments</h2>
                     </div>
 
-                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600">
+                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600 cursor-pointer" onClick={() => navigate('/team/assignments')}>
                         View All <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     <AnimatePresence>
-                        {assignedTickets.map(ticket => (
+                        {assignedTickets.slice(0, 6).map(ticket => (
                             <Card
                                 key={ticket.id}
                                 onClick={() => navigate(`/tickets/${ticket.id}`)}
