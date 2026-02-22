@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Bell, CheckCheck, AlertCircle, Info, Wrench,
-    CheckCircle, Clock, RefreshCw, Inbox, ArrowRight
+    CheckCircle, Clock, RefreshCw, Inbox, ArrowRight, ArrowLeft
 } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -97,6 +97,12 @@ const Notifications = () => {
             {/* ── Header ─────────────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/30 backdrop-blur-xl p-6 rounded-2xl border border-white/40 shadow-xl">
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 rounded-xl bg-white/60 hover:bg-white/80 border border-white/50 text-slate-600 hover:text-orange-600 transition-all cursor-pointer shadow-sm"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                    </button>
                     <div className="p-3 rounded-xl bg-orange-500/10 text-orange-600 border border-orange-500/20 shadow-sm">
                         <Bell size={22} />
                     </div>
