@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, FileSearch, RotateCcw, SendToBack, ThumbsUp, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -127,67 +127,107 @@ export default function UnitDashboard() {
                         <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
                             {tickets.filter(t => t.status === 'RESOLVED').length} ACTION REQUIRED
                         </span>
+                        <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-yellow-600 cursor-pointer">
+                            View All <ArrowRight className="w-3 h-3 ml-1" />
+                        </Button>
                     </div>
                 </div>
 
-                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                     <AnimatePresence>
-                        {tickets.filter(t => t.status === 'RESOLVED').map(ticket => (
-                            <Card
+                        {tickets.filter(t => t.status === 'RESOLVED').map((ticket, i) => (
+                            <motion.div
                                 key={ticket.id}
-                                onClick={() => navigate(`/tickets/${ticket.id}`)}
-                                className="group border border-yellow-200 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.97 }}
+                                transition={{ delay: i * 0.05 }}
+                                className="group flex flex-col rounded-2xl border border-yellow-200/70 bg-white/70 backdrop-blur-xl shadow-md hover:shadow-xl hover:shadow-yellow-400/10 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
                             >
-                                <div className={`h-1 w-full bg-yellow-500`} />
-                                <CardHeader className="pb-2 pt-3 px-4">
-                                    <div className="flex justify-between items-start gap-4">
-                                        <div className="space-y-1 w-full">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
-                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-yellow-200 text-yellow-700 bg-yellow-50`}>
-                                                    PENDING REVIEW
-                                                </span>
-                                            </div>
+                                {/* Card header accent */}
+                                <div className="h-1.5 w-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400" />
+
+                                {/* Title + meta row */}
+                                <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+                                    <div className="mt-0.5 flex-shrink-0 p-2 rounded-xl bg-yellow-50 border border-yellow-200 shadow-sm">
+                                        <FileSearch className="w-4 h-4 text-yellow-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3
+                                            onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                            className="font-bold text-slate-800 text-sm line-clamp-1 hover:text-yellow-700 cursor-pointer transition-colors"
+                                        >
+                                            {ticket.title}
+                                        </h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                                                <CalendarDays className="w-3 h-3" />
+                                                {new Date(ticket.created_at).toLocaleDateString()}
+                                            </span>
+                                            <span className="px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-[9px] font-bold border border-yellow-200 uppercase tracking-widest">
+                                                Pending Review
+                                            </span>
                                         </div>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="px-4 pb-3">
-                                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
-                                        {ticket.description}
-                                    </p>
-                                    <div className="p-2 bg-yellow-50 border border-yellow-100 rounded text-[10px] text-yellow-800 mb-3 italic">
-                                        "{ticket.resolution_notes}"
+                                </div>
+
+                                {/* Description */}
+                                <p className="px-4 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                                    {ticket.description}
+                                </p>
+
+                                {/* Resolution notes block */}
+                                {ticket.resolution_notes && (
+                                    <div className="mx-4 mt-3 rounded-xl bg-amber-50 border border-amber-200/70 p-3">
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-600 mb-1">Team's Resolution Note</p>
+                                        <p className="text-[11px] text-amber-900 leading-relaxed line-clamp-3 italic">
+                                            "{ticket.resolution_notes}"
+                                        </p>
                                     </div>
-                                    <Button
-                                        size="sm"
+                                )}
+
+                                {/* Divider */}
+                                <div className="mx-4 mt-4 border-t border-slate-100" />
+
+                                {/* Action buttons */}
+                                <div className="px-4 pt-3 pb-4 flex flex-col gap-2">
+                                    {/* Primary — Approve */}
+                                    <button
                                         onClick={(e) => handleApprove(e, ticket.id)}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white h-7 text-[10px] font-bold"
+                                        className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xs font-bold py-2 shadow-sm shadow-green-400/30 hover:shadow-md hover:shadow-green-500/30 transition-all duration-200 cursor-pointer"
                                     >
-                                        <CheckCircle2 className="w-3 h-3 mr-1" /> Approve &amp; Close
-                                    </Button>
-                                    <div className="grid grid-cols-2 gap-1 mt-1">
-                                        <Button
-                                            size="sm"
+                                        <ThumbsUp className="w-3.5 h-3.5" />
+                                        Approve &amp; Close
+                                    </button>
+
+                                    {/* Secondary row */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
                                             onClick={(e) => handleReallocateToTeam(e, ticket.id)}
-                                            className="bg-orange-100 hover:bg-orange-200 text-orange-800 h-7 text-[9px] font-bold border border-orange-200"
+                                            className="flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
                                         >
-                                            Reallocate to same Team
-                                        </Button>
-                                        <Button
-                                            size="sm"
+                                            <RotateCcw className="w-3 h-3" />
+                                            Retry · Same Team
+                                        </button>
+                                        <button
                                             onClick={(e) => handleReallocateToG1(e, ticket.id)}
-                                            className="bg-red-50 hover:bg-red-100 text-red-700 h-7 text-[9px] font-bold border border-red-200"
+                                            className="flex items-center justify-center gap-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
                                         >
-                                            Reallocate to G1
-                                        </Button>
+                                            <SendToBack className="w-3 h-3" />
+                                            Return to G1
+                                        </button>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </motion.div>
                         ))}
                     </AnimatePresence>
                     {tickets.filter(t => t.status === 'RESOLVED').length === 0 && (
-                        <div className="col-span-full py-8 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
-                            <p className="font-medium text-xs">No resolutions pending your review.</p>
+                        <div className="col-span-full py-10 text-center text-slate-400 bg-white/40 backdrop-blur-sm rounded-2xl border border-white/40 border-dashed">
+                            <div className="inline-flex p-3 rounded-full bg-yellow-50 border border-yellow-100 mb-3">
+                                <FileSearch className="w-5 h-5 text-yellow-400" />
+                            </div>
+                            <p className="font-semibold text-sm text-slate-500">No resolutions pending your review.</p>
+                            <p className="text-xs text-slate-400 mt-0.5">You're all caught up!</p>
                         </div>
                     )}
                 </div>
