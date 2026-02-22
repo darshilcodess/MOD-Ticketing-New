@@ -96,7 +96,8 @@ export default function G1Dashboard() {
                         {pendingTickets.slice(0, 6).map(ticket => (
                             <Card
                                 key={ticket.id}
-                                className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 shadow-sm"
+                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 shadow-sm cursor-pointer"
                             >
                                 <div className={`h-1 w-full bg-gradient-to-r ${ticket.priority === 'CRITICAL' ? 'from-red-500 to-red-600' :
                                     ticket.priority === 'HIGH' ? 'from-orange-500 to-orange-600' :
@@ -124,7 +125,7 @@ export default function G1Dashboard() {
                                         {ticket.description}
                                     </p>
                                     <Button
-                                        onClick={() => setSelectedTicket(ticket)}
+                                        onClick={(e) => { e.stopPropagation(); setSelectedTicket(ticket); }}
                                         className="w-full bg-slate-800 hover:bg-slate-900 text-white shadow-lg shadow-slate-900/20 group-hover:scale-[1.02] transition-transform duration-200"
                                     >
                                         Allocate <ArrowRight size={16} className="ml-2" />

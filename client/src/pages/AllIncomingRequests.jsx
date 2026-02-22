@@ -154,7 +154,8 @@ export default function AllIncomingRequests() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 8 }}
                             transition={{ delay: i * 0.03 }}
-                            className="grid grid-cols-[3rem_2fr_3fr_7rem_8rem_7rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-orange-50/40 transition-all duration-200 group"
+                            className="grid grid-cols-[3rem_2fr_3fr_7rem_8rem_7rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-orange-50/40 transition-all duration-200 group cursor-pointer"
+                            onClick={() => navigate(`/tickets/${ticket.id}`)}
                         >
                             {/* ID */}
                             <span className="text-xs font-bold text-slate-400">#{ticket.id}</span>
@@ -181,7 +182,7 @@ export default function AllIncomingRequests() {
                             {/* Allocate button */}
                             <div className="flex justify-end">
                                 <button
-                                    onClick={() => setSelectedTicket(ticket)}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedTicket(ticket); }}
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-orange-600 text-white text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm group-hover:shadow-md"
                                 >
                                     Allocate <ArrowRight className="w-3.5 h-3.5" />
