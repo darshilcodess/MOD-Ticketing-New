@@ -32,10 +32,30 @@ class VoucherRequest(BaseModel):
     items: List[VoucherItem]
 
 
-class VoucherResponse(BaseModel):
+class DocumentResponse(BaseModel):
     file_id: str
     file: str
-    message: str = "Voucher generated successfully"
+    message: str = "Document generated successfully"
+
+
+class OutboundDeliveryRequest(BaseModel):
+    ticket_id: int
+    data: dict # Generic dictionary for now
+
+
+class VoucherVariableQtyRequest(BaseModel):
+    ticket_id: int
+    data: dict
+
+
+class VoucherTitleRequest(BaseModel):
+    ticket_id: int
+    data: dict
+
+
+class VoucherExplanationRequest(BaseModel):
+    ticket_id: int
+    data: dict
 
 
 class TicketDocumentSchema(BaseModel):

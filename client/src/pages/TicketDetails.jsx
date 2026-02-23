@@ -1,13 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { motion } from 'framer-motion';
 import {
-    ArrowLeft, Clock, CheckCircle2, AlertCircle,
-    Building, User, MessageSquare, History, FileText, FileSearch,
-    Send, RotateCcw, ArrowRight
+    Clock,
+    CheckCircle2,
+    AlertCircle,
+    MessageSquare,
+    Paperclip,
+    Send,
+    FileText,
+    MoreVertical,
+    User,
+    Calendar,
+    ChevronRight,
+    ArrowLeft,
+    ShieldCheck,
+    RotateCcw,
+    Info,
+    Pencil,
+    DownloadCloud,
+    X,
+    Eye,
+    Building,
+    History,
+    ArrowRight
 } from 'lucide-react';
 import TicketComments from '../components/TicketComments';
+import VoucherModal from '../components/VoucherModal';
+import EditDocumentModal from '../components/EditDocumentModal';
+import PreviewModal from '../components/PreviewModal';
 
 /* ── Helpers ──────────────────────────────────── */
 const STATUS_STYLES = {
@@ -41,15 +64,29 @@ const HISTORY_STYLES = {
 export default function TicketDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth(); // Added user from useAuth
     const [ticket, setTicket] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [comment, setComment] = useState(''); // Added comment state
+    const [submitting, setSubmitting] = useState(false); // Added submitting state
+    const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false); // Added isVoucherModalOpen state
+    const [previewDoc, setPreviewDoc] = useState(null); // Added previewDoc state
+    const [editDoc, setEditDoc] = useState(null); // Added editDoc state
+
+    const fetchTicketDetails = useCallback(async () => {
+        try {
+            const { data } = await api.get(`/tickets/${id}`);
+            setTicket(data);
+        } catch (err) {
+            console.error('Failed to fetch ticket', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
 
     useEffect(() => {
-        api.get(`/tickets/${id}`)
-            .then(({ data }) => setTicket(data))
-            .catch(err => console.error('Failed to fetch ticket', err))
-            .finally(() => setLoading(false));
-    }, [id]);
+        fetchTicketDetails();
+    }, [id, fetchTicketDetails]);
 
     const handleApprove = async () => {
         try {
@@ -206,19 +243,44 @@ export default function TicketDetails() {
                                             <FileText size={20} />
                                         </div>
                                         <div>
-                                            <p className="font-bold text-slate-800 text-sm italic">Voucher</p>
-                                            <p className="text-[10px] text-slate-400 capitalize">{doc.document_type} • {new Date(doc.created_at).toLocaleDateString()}</p>
+                                            <p className="font-bold text-slate-800 text-sm italic">
+                                                {doc.document_type === 'voucher' ? 'Voucher' : doc.document_type.split('_').join(' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 capitalize">{new Date(doc.created_at).toLocaleDateString()}</p>
                                         </div>
                                     </div>
-                                    <a
-                                        href={`${api.defaults.baseURL || 'http://localhost:8000/api/v1'}/documents/voucher/${doc.file_id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-sm"
-                                        title="View PDF"
-                                    >
-                                        <FileSearch size={16} />
-                                    </a>
+                                    <div className="flex items-center gap-2">
+                                        {/* Preview Button */}
+                                        <button
+                                            onClick={() => setPreviewDoc(doc)}
+                                            className="p-2 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                                            title="Quick Preview"
+                                        >
+                                            <Eye size={16} />
+                                        </button>
+
+                                        {/* Edit Button - Only for UNIT and ADMIN */}
+                                        {(user?.role === 'UNIT' || user?.role === 'ADMIN') && (
+                                            <button
+                                                onClick={() => setEditDoc(doc)}
+                                                className="p-2 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                                title="Edit Details"
+                                            >
+                                                <Pencil size={16} />
+                                            </button>
+                                        )}
+
+                                        {/* Download Link */}
+                                        <a
+                                            href={`${api.defaults.baseURL || 'http://localhost:8000/api/v1'}/documents/download/${doc.file_id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all shadow-sm"
+                                            title="Download PDF"
+                                        >
+                                            <DownloadCloud size={16} />
+                                        </a>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -293,6 +355,31 @@ export default function TicketDetails() {
                         </ol>
                     </div>
                 </motion.div>
+            )}
+            {/* Modals */}
+            {previewDoc && (
+                <PreviewModal
+                    document={previewDoc}
+                    onClose={() => setPreviewDoc(null)}
+                />
+            )}
+            {editDoc && (
+                <EditDocumentModal
+                    document={editDoc}
+                    onClose={() => {
+                        setEditDoc(null);
+                        fetchTicketDetails();
+                    }}
+                />
+            )}
+            {isVoucherModalOpen && (
+                <VoucherModal
+                    onClose={() => {
+                        setIsVoucherModalOpen(false);
+                        fetchTicketDetails();
+                    }}
+                    ticketId={id}
+                />
             )}
         </div>
     );

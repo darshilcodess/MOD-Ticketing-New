@@ -12,6 +12,40 @@ const TEMPLATES = [
         name: 'Receipt, Issue & Expense Voucher',
         description: 'Standard issue/receipt voucher for equipment and supply transfers',
         icon: '📄',
+        endpoint: '/documents/voucher',
+        type: 'STRICT_SCHEMA'
+    },
+    {
+        id: 'outbound_delivery',
+        name: 'Outbound Delivery',
+        description: 'Documentation for items leaving the facility',
+        icon: '🚚',
+        endpoint: '/documents/outbound-delivery',
+        type: 'GENERIC'
+    },
+    {
+        id: 'voucher_variable_qty',
+        name: 'Voucher (Variable Qty)',
+        description: 'Voucher format supporting variable quantity measurements',
+        icon: '⚖️',
+        endpoint: '/documents/voucher-variable-qty',
+        type: 'GENERIC'
+    },
+    {
+        id: 'voucher_title',
+        name: 'Voucher with Title',
+        description: 'Custom voucher with a prominent unique title',
+        icon: '🏷️',
+        endpoint: '/documents/voucher-title',
+        type: 'GENERIC'
+    },
+    {
+        id: 'voucher_explanation',
+        name: 'Voucher with Explanation',
+        description: 'Detailed voucher with added explanation/justification block',
+        icon: 'ℹ️',
+        endpoint: '/documents/voucher-explanation',
+        type: 'GENERIC'
     },
 ];
 
@@ -30,10 +64,18 @@ const EMPTY_VOUCHER = {
     items: [{ part_no: '', nomenclature: '', total: '', remarks: '' }],
 };
 
+const GENERIC_DATA = {
+    title: '',
+    explanation: '',
+    date: new Date().toLocaleDateString(),
+    items: [{ name: '', qty: '', note: '' }]
+};
+
 export default function VoucherModal({ onClose, ticketId }) {
     const [step, setStep] = useState('select'); // 'select' | 'fill'
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [formData, setFormData] = useState(EMPTY_VOUCHER);
+    const [genericData, setGenericData] = useState(GENERIC_DATA);
     const [generating, setGenerating] = useState(false);
     const [error, setError] = useState('');
 
@@ -44,6 +86,10 @@ export default function VoucherModal({ onClose, ticketId }) {
 
     const updateField = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const updateGenericField = (field, value) => {
+        setGenericData((prev) => ({ ...prev, [field]: value }));
     };
 
     const updateItem = (index, field, value) => {
@@ -69,35 +115,29 @@ export default function VoucherModal({ onClose, ticketId }) {
     };
 
     const handleGenerate = async () => {
+        if (!selectedTemplate) return;
         setGenerating(true);
         setError('');
         try {
-            // Include ticket_id in the payload
-            const payload = {
-                ...formData,
-                ticket_id: ticketId
-            };
-
-            const { data } = await api.post('/documents/voucher', payload);
-
-            // Build the download URL and open PDF in a new tab
-            const baseURL = api.defaults.baseURL || 'http://localhost:8000/api/v1';
-            const pdfUrl = `${baseURL}/documents/voucher/${data.file_id}`;
-
-            // Log for debugging
-            console.log('Opening PDF at:', pdfUrl);
-
-            // Try to open in new tab
-            const newWindow = window.open(pdfUrl, '_blank');
-            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                // Pop-up blocked, notify user or fallback
-                setError('Pop-up was blocked. Please allow pop-ups or use the link in the ticket details.');
+            let payload;
+            if (selectedTemplate.type === 'STRICT_SCHEMA') {
+                payload = {
+                    ...formData,
+                    ticket_id: ticketId
+                };
             } else {
-                onClose();
+                payload = {
+                    ticket_id: ticketId,
+                    data: genericData
+                };
             }
+
+            await api.post(selectedTemplate.endpoint, payload);
+            // Just close the modal on success as requested
+            onClose();
         } catch (err) {
-            console.error('Voucher generation failed:', err);
-            setError(err.response?.data?.detail || 'Failed to generate voucher. Please try again.');
+            console.error('Document generation failed:', err);
+            setError(err.response?.data?.detail || 'Failed to generate document. Please try again.');
         } finally {
             setGenerating(false);
         }
@@ -163,133 +203,177 @@ export default function VoucherModal({ onClose, ticketId }) {
                 {/* Step: Fill Details */}
                 {step === 'fill' && (
                     <div className="overflow-y-auto flex-1 p-6 space-y-6">
-                        {/* IV / RV header row */}
-                        <div>
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Header Details</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-3">
-                                    <p className="text-xs font-bold text-orange-600 uppercase">Issue Voucher (IV)</p>
-                                    {[
-                                        { label: 'IV No.', key: 'iv_no', placeholder: 'e.g. IV-2024-001' },
-                                        { label: 'Unit', key: 'unit_iv', placeholder: 'e.g. 101 EME Bn' },
-                                        { label: 'Station', key: 'stn_iv', placeholder: 'e.g. Delhi Cantt' },
-                                        { label: 'Date', key: 'date_iv', placeholder: 'e.g. 15 Feb 2025' },
-                                    ].map(({ label, key, placeholder }) => (
-                                        <div key={key} className="space-y-1">
-                                            <label className="text-xs font-medium text-slate-600">{label}</label>
-                                            <Input
-                                                placeholder={placeholder}
-                                                value={formData[key]}
-                                                onChange={(e) => updateField(key, e.target.value)}
-                                                className="text-sm h-8 border-slate-200 focus:border-orange-400 focus:ring-orange-400"
-                                            />
+                        {selectedTemplate.type === 'STRICT_SCHEMA' ? (
+                            <>
+                                {/* IV / RV header row */}
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Header Details</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3">
+                                            <p className="text-xs font-bold text-orange-600 uppercase">Issue Voucher (IV)</p>
+                                            {[
+                                                { label: 'IV No.', key: 'iv_no', placeholder: 'e.g. IV-2024-001' },
+                                                { label: 'Unit', key: 'unit_iv', placeholder: 'e.g. 101 EME Bn' },
+                                                { label: 'Station', key: 'stn_iv', placeholder: 'e.g. Delhi Cantt' },
+                                                { label: 'Date', key: 'date_iv', placeholder: 'e.g. 15 Feb 2025' },
+                                            ].map(({ label, key, placeholder }) => (
+                                                <div key={key} className="space-y-1">
+                                                    <label className="text-xs font-medium text-slate-600">{label}</label>
+                                                    <Input
+                                                        placeholder={placeholder}
+                                                        value={formData[key]}
+                                                        onChange={(e) => updateField(key, e.target.value)}
+                                                        className="text-sm h-8 border-slate-200 focus:border-orange-400 focus:ring-orange-400"
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
-                                <div className="space-y-3">
-                                    <p className="text-xs font-bold text-blue-600 uppercase">Receipt Voucher (RV)</p>
-                                    {[
-                                        { label: 'RV No.', key: 'rv_no', placeholder: 'e.g. RV-2024-001' },
-                                        { label: 'Unit', key: 'unit_rv', placeholder: 'e.g. 202 Arty Bde' },
-                                        { label: 'Station', key: 'stn_rv', placeholder: 'e.g. Pune' },
-                                        { label: 'Date', key: 'date_rv', placeholder: 'e.g. 15 Feb 2025' },
-                                    ].map(({ label, key, placeholder }) => (
-                                        <div key={key} className="space-y-1">
-                                            <label className="text-xs font-medium text-slate-600">{label}</label>
-                                            <Input
-                                                placeholder={placeholder}
-                                                value={formData[key]}
-                                                onChange={(e) => updateField(key, e.target.value)}
-                                                className="text-sm h-8 border-slate-200 focus:border-blue-400 focus:ring-blue-400"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Body fields */}
-                        <div>
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Body</h3>
-                            <div className="space-y-3">
-                                {[
-                                    { label: 'Issued To', key: 'issued_to', placeholder: 'Name / Unit receiving the items' },
-                                    { label: 'In Compliance With', key: 'compliance', placeholder: 'Order / Authority reference' },
-                                    { label: 'Auth', key: 'auth', placeholder: 'Authorisation reference number' },
-                                ].map(({ label, key, placeholder }) => (
-                                    <div key={key} className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-600">{label}</label>
-                                        <Input
-                                            placeholder={placeholder}
-                                            value={formData[key]}
-                                            onChange={(e) => updateField(key, e.target.value)}
-                                            className="text-sm border-slate-200 focus:border-orange-400 focus:ring-orange-400"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Items table */}
-                        <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Line Items</h3>
-                                <button
-                                    type="button"
-                                    onClick={addItem}
-                                    className="text-xs font-semibold text-orange-600 hover:text-orange-700 px-3 py-1 rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors"
-                                >
-                                    + Add Item
-                                </button>
-                            </div>
-                            <div className="space-y-2">
-                                {/* Column headers */}
-                                <div className="grid grid-cols-[auto_1fr_1fr_80px_80px] gap-2 px-1">
-                                    {['#', 'Part No.', 'Nomenclature', 'Total', 'Remarks'].map((h) => (
-                                        <span key={h} className="text-[10px] font-bold text-slate-400 uppercase">{h}</span>
-                                    ))}
-                                </div>
-                                {formData.items.map((item, idx) => (
-                                    <div key={idx} className="grid grid-cols-[24px_1fr_1fr_80px_80px] gap-2 items-center">
-                                        <span className="text-xs text-slate-400 text-center">{idx + 1}</span>
-                                        <Input
-                                            placeholder="Part no."
-                                            value={item.part_no}
-                                            onChange={(e) => updateItem(idx, 'part_no', e.target.value)}
-                                            className="text-xs h-8 border-slate-200"
-                                        />
-                                        <Input
-                                            placeholder="Description"
-                                            value={item.nomenclature}
-                                            onChange={(e) => updateItem(idx, 'nomenclature', e.target.value)}
-                                            className="text-xs h-8 border-slate-200"
-                                        />
-                                        <Input
-                                            placeholder="Qty"
-                                            value={item.total}
-                                            onChange={(e) => updateItem(idx, 'total', e.target.value)}
-                                            className="text-xs h-8 border-slate-200"
-                                        />
-                                        <div className="flex gap-1">
-                                            <Input
-                                                placeholder="Note"
-                                                value={item.remarks}
-                                                onChange={(e) => updateItem(idx, 'remarks', e.target.value)}
-                                                className="text-xs h-8 border-slate-200"
-                                            />
-                                            {formData.items.length > 1 && (
-                                                <button
-                                                    onClick={() => removeItem(idx)}
-                                                    className="flex-shrink-0 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                >
-                                                    <X className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
+                                        <div className="space-y-3">
+                                            <p className="text-xs font-bold text-blue-600 uppercase">Receipt Voucher (RV)</p>
+                                            {[
+                                                { label: 'RV No.', key: 'rv_no', placeholder: 'e.g. RV-2024-001' },
+                                                { label: 'Unit', key: 'unit_rv', placeholder: 'e.g. 202 Arty Bde' },
+                                                { label: 'Station', key: 'stn_rv', placeholder: 'e.g. Pune' },
+                                                { label: 'Date', key: 'date_rv', placeholder: 'e.g. 15 Feb 2025' },
+                                            ].map(({ label, key, placeholder }) => (
+                                                <div key={key} className="space-y-1">
+                                                    <label className="text-xs font-medium text-slate-600">{label}</label>
+                                                    <Input
+                                                        placeholder={placeholder}
+                                                        value={formData[key]}
+                                                        onChange={(e) => updateField(key, e.target.value)}
+                                                        className="text-sm h-8 border-slate-200 focus:border-blue-400 focus:ring-blue-400"
+                                                    />
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Body fields */}
+                                <div>
+                                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Body</h3>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: 'Issued To', key: 'issued_to', placeholder: 'Name / Unit receiving the items' },
+                                            { label: 'In Compliance With', key: 'compliance', placeholder: 'Order / Authority reference' },
+                                            { label: 'Auth', key: 'auth', placeholder: 'Authorisation reference number' },
+                                        ].map(({ label, key, placeholder }) => (
+                                            <div key={key} className="space-y-1">
+                                                <label className="text-xs font-medium text-slate-600">{label}</label>
+                                                <Input
+                                                    placeholder={placeholder}
+                                                    value={formData[key]}
+                                                    onChange={(e) => updateField(key, e.target.value)}
+                                                    className="text-sm border-slate-200 focus:border-orange-400 focus:ring-orange-400"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Items table */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Line Items</h3>
+                                        <button
+                                            type="button"
+                                            onClick={addItem}
+                                            className="text-xs font-semibold text-orange-600 hover:text-orange-700 px-3 py-1 rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors"
+                                        >
+                                            + Add Item
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {/* Column headers */}
+                                        <div className="grid grid-cols-[auto_1fr_1fr_80px_80px] gap-2 px-1">
+                                            {['#', 'Part No.', 'Nomenclature', 'Total', 'Remarks'].map((h) => (
+                                                <span key={h} className="text-[10px] font-bold text-slate-400 uppercase">{h}</span>
+                                            ))}
+                                        </div>
+                                        {formData.items.map((item, idx) => (
+                                            <div key={idx} className="grid grid-cols-[24px_1fr_1fr_80px_80px] gap-2 items-center">
+                                                <span className="text-xs text-slate-400 text-center">{idx + 1}</span>
+                                                <Input
+                                                    placeholder="Part no."
+                                                    value={item.part_no}
+                                                    onChange={(e) => updateItem(idx, 'part_no', e.target.value)}
+                                                    className="text-xs h-8 border-slate-200"
+                                                />
+                                                <Input
+                                                    placeholder="Description"
+                                                    value={item.nomenclature}
+                                                    onChange={(e) => updateItem(idx, 'nomenclature', e.target.value)}
+                                                    className="text-xs h-8 border-slate-200"
+                                                />
+                                                <Input
+                                                    placeholder="Qty"
+                                                    value={item.total}
+                                                    onChange={(e) => updateItem(idx, 'total', e.target.value)}
+                                                    className="text-xs h-8 border-slate-200"
+                                                />
+                                                <div className="flex gap-1">
+                                                    <Input
+                                                        placeholder="Note"
+                                                        value={item.remarks}
+                                                        onChange={(e) => updateItem(idx, 'remarks', e.target.value)}
+                                                        className="text-xs h-8 border-slate-200"
+                                                    />
+                                                    {formData.items.length > 1 && (
+                                                        <button
+                                                            onClick={() => removeItem(idx)}
+                                                            className="flex-shrink-0 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="p-4 rounded-xl bg-orange-50 border border-orange-100">
+                                    <p className="text-xs font-semibold text-orange-800 flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                                        On-Demand Configuration
+                                    </p>
+                                    <p className="text-[11px] text-orange-600 mt-1">This template uses a generic format. I am setting it up with default dummy data as requested.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-600">Document Title / Subject</label>
+                                        <Input
+                                            placeholder="Enter title..."
+                                            value={genericData.title}
+                                            onChange={(e) => updateGenericField('title', e.target.value)}
+                                            className="text-sm border-slate-200 group-hover:border-orange-200 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-600">Reference Date</label>
+                                        <Input
+                                            placeholder="e.g. 23 Feb 2025"
+                                            value={genericData.date}
+                                            onChange={(e) => updateGenericField('date', e.target.value)}
+                                            className="text-sm border-slate-200"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-600">Explanation / Statement</label>
+                                        <textarea
+                                            placeholder="Write your explanation here..."
+                                            value={genericData.explanation}
+                                            onChange={(e) => updateGenericField('explanation', e.target.value)}
+                                            className="w-full min-h-[100px] p-3 text-sm rounded-lg border border-slate-200 focus:border-orange-400 focus:ring-1 focus:ring-orange-400 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {error && (
                             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">

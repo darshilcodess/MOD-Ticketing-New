@@ -6,3 +6,8 @@ from app.models.ticket import Ticket  # noqa: F401
 from app.models.comment import Comment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
 from app.models.document import TicketDocument  # noqa: F401
+from app.models.document_content import (  # noqa: F401
+    VoucherContent, OutboundDeliveryContent,
+    VoucherVariableQtyContent, VoucherWithTitleContent,
+    VoucherWithExplanationContent
+)

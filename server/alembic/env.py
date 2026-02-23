@@ -32,7 +32,7 @@ if config.config_file_name is not None:
 
 # ── Import all models so Alembic can detect them for autogenerate ─────────────
 from app.core.database import Base  # noqa: E402
-from app.models import user, team, ticket  # noqa: F401 – registers tables on Base.metadata
+from app import models  # noqa: F401
 
 # ── Override sqlalchemy.url with DATABASE_URL env var ────────────────────────
 database_url = os.environ.get("DATABASE_URL")
