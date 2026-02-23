@@ -18,6 +18,7 @@ export default function UnitDashboard() {
     const [showVoucherModal, setShowVoucherModal] = useState(false);
     const [createVoucher, setCreateVoucher] = useState(false);
     const [activeTicketId, setActiveTicketId] = useState(null);
+    const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'MEDIUM' });
     const [pendingPriorityFilter, setPendingPriorityFilter] = useState('ALL');
     const [pendingSortOrder, setPendingSortOrder] = useState('NEWEST');
     const [activePriorityFilter, setActivePriorityFilter] = useState('ALL');
