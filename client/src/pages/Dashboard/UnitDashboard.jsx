@@ -402,10 +402,10 @@ export default function UnitDashboard() {
                             exit={{ scale: 0.95, opacity: 0 }}
                             className="w-full max-w-lg"
                         >
-                            <Card className="border-0 shadow-2xl bg-white rounded-xl overflow-hidden">
-                                <div className="bg-slate-900 p-6 border-b border-slate-800">
-                                    <CardTitle className="text-white text-xl">Create New Ticket</CardTitle>
-                                    <CardDescription className="text-slate-400">Submit a new issue for the team to resolve.</CardDescription>
+                            <Card className="border-0 shadow-2xl bg-white rounded-2xl overflow-hidden">
+                                <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 p-6 border-b border-orange-100">
+                                    <CardTitle className="text-orange-800 text-xl font-bold">Create New Ticket</CardTitle>
+                                    <CardDescription className="text-orange-600/80 font-medium">Submit a new issue for the team to resolve.</CardDescription>
                                 </div>
                                 <CardContent className="p-6">
                                     <form onSubmit={handleCreateTicket} className="space-y-5">
@@ -438,8 +438,8 @@ export default function UnitDashboard() {
                                                         type="button"
                                                         onClick={() => setNewTicket({ ...newTicket, priority: p })}
                                                         className={`px-2 py-2 text-xs font-bold rounded-md border transition-all ${newTicket.priority === p
-                                                            ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                                            ? 'bg-orange-100 text-orange-800 border-orange-300 shadow-sm'
+                                                            : 'bg-white text-slate-600 border-slate-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'
                                                             }`}
                                                     >
                                                         {p}
