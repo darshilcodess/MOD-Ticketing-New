@@ -4,7 +4,7 @@ import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, AlertTriangle, Briefcase, ArrowRight } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Briefcase, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 import ActivityHistory from '../../components/ActivityHistory';
 import DashboardFilters from '../../components/DashboardFilters';
 
@@ -13,9 +13,12 @@ export default function TeamDashboard() {
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [resolvingTicket, setResolvingTicket] = useState(null);
-    const [resolutionNotes, setResolutionNotes] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('ALL');
     const [sortOrder, setSortOrder] = useState('NEWEST');
+    const [pendingPriorityFilter, setPendingPriorityFilter] = useState('ALL');
+    const [pendingSortOrder, setPendingSortOrder] = useState('NEWEST');
+    const [closedPriorityFilter, setClosedPriorityFilter] = useState('ALL');
+    const [closedSortOrder, setClosedSortOrder] = useState('NEWEST');
 
     useEffect(() => {
         fetchTickets();
@@ -65,6 +68,26 @@ export default function TeamDashboard() {
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'OPEN': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+            case 'ALLOCATED': return 'text-orange-400 bg-orange-400/10 border-orange-400/20';
+            case 'RESOLVED': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+            case 'CLOSED': return 'text-green-400 bg-green-400/10 border-green-400/20';
+            default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
+        }
+    };
+
+    const getPriorityStyles = (priority) => {
+        switch (priority) {
+            case 'CRITICAL': return { line: 'bg-red-500', badge: 'bg-red-50 text-red-700 border-red-200' };
+            case 'HIGH': return { line: 'bg-orange-500', badge: 'bg-orange-50 text-orange-700 border-orange-200' };
+            case 'MEDIUM': return { line: 'bg-yellow-500', badge: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
+            case 'LOW': return { line: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700 border-blue-200' };
+            default: return { line: 'bg-slate-500', badge: 'bg-slate-50 text-slate-700 border-slate-200' };
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -163,6 +186,172 @@ export default function TeamDashboard() {
                     )}
                 </div>
             </section >
+
+            {/* Pending for Review & Closed Tickets — Side by Side */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+
+                {/* Pending for Review Section */}
+                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg min-h-[400px]">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-1.5 bg-gradient-to-b from-yellow-400 to-yellow-600 rounded-full shadow-lg shadow-yellow-500/30"></div>
+                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Pending for Review</h2>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
+                                {tickets.filter(t => t.status === 'RESOLVED').length} PENDING
+                            </span>
+                            <DashboardFilters
+                                priorityFilter={pendingPriorityFilter}
+                                setPriorityFilter={setPendingPriorityFilter}
+                                sortOrder={pendingSortOrder}
+                                setSortOrder={setPendingSortOrder}
+                                themeColor="yellow"
+                            />
+                            <Button variant="ghost" size="sm" className="hidden text-slate-500 hover:text-yellow-600 cursor-pointer ml-1" onClick={() => navigate('/team/pending-review')}>
+                                View All <ArrowRight className="w-4 h-4 ml-1" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 grid-cols-1">
+                        <AnimatePresence>
+                            {tickets
+                                .filter(t => t.status === 'RESOLVED')
+                                .filter(t => pendingPriorityFilter === 'ALL' || t.priority === pendingPriorityFilter)
+                                .sort((a, b) => {
+                                    if (pendingSortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+                                    if (pendingSortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+                                    return 0;
+                                })
+                                .slice(0, 5).map(ticket => (
+                                    <Card
+                                        key={ticket.id}
+                                        onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                        className="group relative overflow-hidden border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-yellow-500/10 transition-all duration-300 shadow-sm cursor-pointer"
+                                    >
+                                        <div className={`h-1 w-full bg-yellow-400`} />
+                                        <CardHeader className="pb-3 pt-4 px-5">
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-sm font-bold text-slate-800 line-clamp-1">{ticket.title}</CardTitle>
+                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-yellow-200 text-yellow-700 bg-yellow-50`}>
+                                                    PENDING REVIEW
+                                                </span>
+                                            </div>
+                                            <CardDescription className="text-xs text-slate-400 font-medium pt-1">
+                                                ID: #{ticket.id} • {new Date(ticket.created_at).toLocaleDateString()}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="px-5 pb-4">
+                                            <p className="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">
+                                                {ticket.description}
+                                            </p>
+                                            {ticket.resolution_notes && (
+                                                <div className="mt-2 p-2.5 bg-yellow-50/80 border border-yellow-200/60 rounded-md text-xs text-yellow-800">
+                                                    <div className="flex items-center gap-1.5 font-bold mb-1 text-yellow-700">
+                                                        <CheckCircle2 size={12} /> Resolution Note
+                                                    </div>
+                                                    <div className="line-clamp-2 italic">{ticket.resolution_notes}</div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                        </AnimatePresence>
+
+                        {tickets.filter(t => t.status === 'RESOLVED').length === 0 && (
+                            <div className="col-span-full py-12 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
+                                <div className="inline-flex p-3 rounded-full bg-slate-100 mb-3 text-slate-400 shadow-inner">
+                                    <Clock size={24} />
+                                </div>
+                                <p className="font-medium text-sm">No tickets pending unit review.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* Closed Tickets Section */}
+                <section className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg min-h-[400px]">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-1.5 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg shadow-green-500/30"></div>
+                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Closed Tickets</h2>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-extrabold border border-green-200 shadow-sm">
+                                {tickets.filter(t => t.status === 'CLOSED').length} CLOSED
+                            </span>
+                            <DashboardFilters
+                                priorityFilter={closedPriorityFilter}
+                                setPriorityFilter={setClosedPriorityFilter}
+                                sortOrder={closedSortOrder}
+                                setSortOrder={setClosedSortOrder}
+                                themeColor="green"
+                            />
+                            <Button variant="ghost" size="sm" className="hidden text-slate-500 hover:text-green-600 cursor-pointer ml-1" onClick={() => navigate('/team/closed-tickets')}>
+                                View All <ArrowRight className="w-4 h-4 ml-1" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-4 grid-cols-1">
+                        <AnimatePresence>
+                            {tickets
+                                .filter(t => t.status === 'CLOSED')
+                                .filter(t => closedPriorityFilter === 'ALL' || t.priority === closedPriorityFilter)
+                                .sort((a, b) => {
+                                    if (closedSortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+                                    if (closedSortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+                                    return 0;
+                                })
+                                .slice(0, 5).map(ticket => (
+                                    <Card
+                                        key={ticket.id}
+                                        onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                        className="group relative overflow-hidden border border-white/40 bg-white/40 backdrop-blur-md opacity-80 hover:opacity-100 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 shadow-sm cursor-pointer"
+                                    >
+                                        <div className={`h-1 w-full bg-green-500`} />
+                                        <CardHeader className="pb-3 pt-4 px-5">
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-sm font-bold text-slate-700 line-clamp-1 decoration-slate-400/50">{ticket.title}</CardTitle>
+                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-green-200 text-green-700 bg-green-50`}>
+                                                    CLOSED
+                                                </span>
+                                            </div>
+                                            <CardDescription className="text-xs text-slate-400 font-medium pt-1">
+                                                ID: #{ticket.id} • {new Date(ticket.created_at).toLocaleDateString()}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="px-5 pb-4">
+                                            <p className="text-xs text-slate-500 mb-3 line-clamp-2 leading-relaxed">
+                                                {ticket.description}
+                                            </p>
+                                            {ticket.resolution_notes && (
+                                                <div className="mt-2 p-2.5 bg-green-50/80 border border-green-200/60 rounded-md text-xs text-green-800">
+                                                    <div className="flex items-center gap-1.5 font-bold mb-1 text-green-700">
+                                                        <CheckCircle2 size={12} /> Resolution Note
+                                                    </div>
+                                                    <div className="line-clamp-2 italic">{ticket.resolution_notes}</div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                        </AnimatePresence>
+
+                        {tickets.filter(t => t.status === 'CLOSED').length === 0 && (
+                            <div className="col-span-full py-12 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
+                                <div className="inline-flex p-3 rounded-full bg-slate-100 mb-3 text-slate-400 shadow-inner">
+                                    <CheckCircle2 size={24} />
+                                </div>
+                                <p className="font-medium text-sm">No closed tickets yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
 
             <div className="mt-8">
                 <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
