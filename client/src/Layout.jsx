@@ -2,10 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import { useAuth } from './context/AuthContext';
-import { LogOut, Bell } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import NotificationBell from './components/NotificationBell';
 
 const Layout = ({ children }) => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
 
     return (
@@ -23,14 +24,9 @@ const Layout = ({ children }) => {
                     </div>
                     {/* Re-added User Info here */}
                     <div className="flex items-center gap-6">
-                        <span className="text-white/80 text-sm font-medium">Jai Hind, User</span>
+                        <span className="text-white/80 text-sm font-medium">Jai Hind, {user?.full_name || 'User'}</span>
                         <div className="h-4 w-px bg-white/20"></div>
-                        <button
-                            onClick={() => navigate('/notifications')}
-                            className="text-white/70 hover:text-orange-400 transition-colors cursor-pointer"
-                        >
-                            <Bell size={18} />
-                        </button>
+                        <NotificationBell />
                         <div className="h-4 w-px bg-white/20"></div>
                         <button
                             onClick={logout}

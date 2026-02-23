@@ -9,7 +9,7 @@ class TicketDocument(Base):
     id = Column(Integer, primary_key=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     file_id = Column(String, unique=True, index=True, nullable=False)
-    file_path = Column(String, nullable=False)
+    template_name = Column(String, nullable=False)
     document_type = Column(String, default="voucher")
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())

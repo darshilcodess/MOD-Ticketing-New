@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, FileSearch, RotateCcw, SendToBack, ThumbsUp, CalendarDays, FileText } from 'lucide-react';
+import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, FileSearch, RotateCcw, SendToBack, ThumbsUp, CalendarDays, FileText, ShieldCheck, AlertTriangle, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -483,21 +483,35 @@ export default function UnitDashboard() {
                                                 required
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-3">
                                             <label className="text-sm font-semibold text-slate-700">Priority Level</label>
-                                            <div className="grid grid-cols-4 gap-2">
-                                                {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => (
-                                                    <button
-                                                        key={p}
-                                                        type="button"
-                                                        onClick={() => setNewTicket({ ...newTicket, priority: p })}
-                                                        className={`px-2 py-2 text-xs font-bold rounded-md border transition-all ${newTicket.priority === p
-                                                            ? 'bg-orange-100 text-orange-800 border-orange-300 shadow-sm'
-                                                            : 'bg-white text-slate-600 border-slate-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'
-                                                            }`}
-                                                    >
-                                                        {p}
-                                                    </button>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {Object.entries({
+                                                    LOW: { icon: <ShieldCheck size={14} />, desc: "Routine maintenance or non-critical inquiries." },
+                                                    MEDIUM: { icon: <AlertCircle size={14} />, desc: "Standard requests or issues with workarounds." },
+                                                    HIGH: { icon: <AlertTriangle size={14} />, desc: "Important tasks with performance impact." },
+                                                    CRITICAL: { icon: <Zap size={14} />, desc: "System blocking issues or critical failures." }
+                                                }).map(([p, cfg]) => (
+                                                    <div key={p} className="relative group">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setNewTicket({ ...newTicket, priority: p })}
+                                                            className={`w-full flex items-center justify-center gap-2 px-3 py-3 text-xs font-bold rounded-xl border transition-all duration-200 ${newTicket.priority === p
+                                                                ? 'bg-orange-600 text-white border-orange-600 shadow-lg shadow-orange-600/20 scale-[1.02]'
+                                                                : 'bg-white text-slate-600 border-slate-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700'
+                                                                }`}
+                                                        >
+                                                            {cfg.icon}
+                                                            {p}
+                                                        </button>
+
+                                                        {/* Simple Tooltip */}
+                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-[60] shadow-xl text-center">
+                                                            <div className="font-bold border-b border-white/20 pb-1 mb-1">{p} Priority</div>
+                                                            {cfg.desc}
+                                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800" />
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
                                         </div>

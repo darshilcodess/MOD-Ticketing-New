@@ -61,8 +61,55 @@ def create_comment(
         user_id=current_user.id
     )
     db.add(new_comment)
+    
+    # Record history event for the comment
+    ticket.append_history(
+        event="COMMENT_ADDED",
+        actor_name=current_user.full_name,
+        actor_role=current_user.role.value,
+        notes=content[:100] + ("..." if len(content) > 100 else "")
+    )
+    
     db.commit()
     db.refresh(new_comment)
+
+    # Notify all users that can access the ticket
+    try:
+        from app.models.notification import Notification
+        from app.models.user import UserRole, User as UserModel
+        
+        recipients = set()
+        
+        # 1. G1 users
+        g1_users = db.query(UserModel).filter(UserModel.role == UserRole.G1).all()
+        for g1 in g1_users:
+            recipients.add(g1.id)
+            
+        # 2. Ticket creator
+        if ticket.created_by_id:
+            recipients.add(ticket.created_by_id)
+            
+        # 3. Assigned team members
+        if ticket.assigned_team_id:
+            team_members = db.query(UserModel).filter(UserModel.team_id == ticket.assigned_team_id).all()
+            for member in team_members:
+                recipients.add(member.id)
+                
+        # Remove the commenter from recipients
+        if current_user.id in recipients:
+            recipients.remove(current_user.id)
+            
+        # Create notifications
+        for r_id in recipients:
+            db.add(Notification(
+                recipient_id=r_id,
+                ticket_id=ticket.id,
+                message=f"{current_user.full_name} added a comment on ticket '{ticket.title}'"
+            ))
+        db.commit()
+    except Exception as e:
+        print(f"Error creating comment notifications: {e}")
+        db.rollback()
     
     return {
         "id": new_comment.id,
