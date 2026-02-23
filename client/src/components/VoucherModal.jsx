@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, X, Loader2, ChevronRight, FileCheck } from 'lucide-react';
+import { FileText, X, Loader2, ChevronRight, FileCheck, Plus, Trash2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import api from '../services/api';
@@ -9,106 +9,103 @@ import api from '../services/api';
 const TEMPLATES = [
     {
         id: 'voucher',
-        name: 'Receipt, Issue & Expense Voucher',
-        description: 'Standard issue/receipt voucher for equipment and supply transfers',
+        name: 'Standard Voucher',
+        description: 'Standard receipt, issue & expense voucher',
         icon: '📄',
-        endpoint: '/documents/voucher',
-        type: 'STRICT_SCHEMA'
+        endpoint: '/documents/voucher'
     },
     {
         id: 'outbound_delivery',
         name: 'Outbound Delivery',
-        description: 'Documentation for items leaving the facility',
+        description: 'Detailed A4 Landscape delivery note for shipments',
         icon: '🚚',
-        endpoint: '/documents/outbound-delivery',
-        type: 'GENERIC'
+        endpoint: '/documents/outbound-delivery'
     },
     {
         id: 'voucher_variable_qty',
         name: 'Voucher (Variable Qty)',
-        description: 'Voucher format supporting variable quantity measurements',
+        description: 'Voucher format supporting measurements (HQ/P/Q)',
         icon: '⚖️',
-        endpoint: '/documents/voucher-variable-qty',
-        type: 'GENERIC'
+        endpoint: '/documents/voucher-variable-qty'
     },
     {
         id: 'voucher_title',
         name: 'Voucher with Title',
-        description: 'Custom voucher with a prominent unique title',
+        description: 'Portrait voucher with custom title and vehicle details',
         icon: '🏷️',
-        endpoint: '/documents/voucher-title',
-        type: 'GENERIC'
+        endpoint: '/documents/voucher-title'
     },
     {
         id: 'voucher_explanation',
         name: 'Voucher with Explanation',
-        description: 'Detailed voucher with added explanation/justification block',
+        description: 'Portrait voucher with detailed justification block',
         icon: 'ℹ️',
-        endpoint: '/documents/voucher-explanation',
-        type: 'GENERIC'
+        endpoint: '/documents/voucher-explanation'
     },
 ];
 
-const EMPTY_VOUCHER = {
-    iv_no: '',
-    unit_iv: '',
-    stn_iv: '',
-    date_iv: '',
-    rv_no: '',
-    unit_rv: '',
-    stn_rv: '',
-    date_rv: '',
-    issued_to: '',
-    compliance: '',
-    auth: '',
-    items: [{ part_no: '', nomenclature: '', total: '', remarks: '' }],
-};
-
-const GENERIC_DATA = {
-    title: '',
-    explanation: '',
-    date: new Date().toLocaleDateString(),
-    items: [{ name: '', qty: '', note: '' }]
+const INITIAL_STATES = {
+    voucher: {
+        iv_no: '', unit_iv: '', stn_iv: '', date_iv: '',
+        rv_no: '', unit_rv: '', stn_rv: '', date_rv: '',
+        issued_to: '', compliance: '', auth: '',
+        items: [{ part_no: '', nomenclature: '', total: '', remarks: '' }],
+    },
+    outbound_delivery: {
+        shipment_no: '', shipment_date: '', class_name: '', obd_from: '', obd_to: '', obd_creation_date: '',
+        str_no: '', tracking_number: '', str_date: '', sto_no: '', priority: '', type_of_str: '',
+        authority: '', from_location: '', to_location: '', sus_no: '', ibd_number: '',
+        items: [{ cos_section: '', part_number: '', sap_number: '', material_description: '', batch_no: '', serial_no: '', au: '', demand_qty: '', obd_qty: '', sub_depot: '' }]
+    },
+    voucher_variable_qty: {
+        iv_no: '', rv_no: '', unit_iv: '', unit_rv: '', stn_iv: '', stn_rv: '', date_iv: '', date_rv: '',
+        issued_to: '', compliance: '', auth: '', issued_by: '', handed_over: '', taken_over: '', received_by: '',
+        items: [{ part_no: '', nomenclature: '', hq: '', p: '', q: '', total: '' }]
+    },
+    voucher_title: {
+        iv_no: '', rv_no: '', date_iv: '', date_rv: '', unit_iv: '', unit_rv: '', pin_iv: '', pin_rv: '', station_iv: '', station_rv: '',
+        issued_to: '', compliance: '', authority: '', issued_by: '', handed_over: '', taken_over: '', received_by: '',
+        items: [{ vehicle_type: '', ba_no: '', au: '', qty: '', remarks: '' }]
+    },
+    voucher_explanation: {
+        iv_no: '', rv_no: '', date_iv: '', date_rv: '', unit_iv: '', unit_rv: '', stn_iv: '', stn_rv: '',
+        center_heading: '', paragraph_text: '', issued_by: '', handed_over: '', taken_over: '', received_by: '',
+        items: [{ part_no: '', nomenclature: '', au: '', qty: '', remarks: '' }]
+    }
 };
 
 export default function VoucherModal({ onClose, ticketId }) {
     const [step, setStep] = useState('select'); // 'select' | 'fill'
     const [selectedTemplate, setSelectedTemplate] = useState(null);
-    const [formData, setFormData] = useState(EMPTY_VOUCHER);
-    const [genericData, setGenericData] = useState(GENERIC_DATA);
+    const [data, setData] = useState({});
     const [generating, setGenerating] = useState(false);
     const [error, setError] = useState('');
 
     const handleTemplateSelect = (template) => {
         setSelectedTemplate(template);
+        setData(INITIAL_STATES[template.id]);
         setStep('fill');
     };
 
     const updateField = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-    };
-
-    const updateGenericField = (field, value) => {
-        setGenericData((prev) => ({ ...prev, [field]: value }));
+        setData(prev => ({ ...prev, [field]: value }));
     };
 
     const updateItem = (index, field, value) => {
-        setFormData((prev) => {
-            const items = [...prev.items];
-            items[index] = { ...items[index], [field]: value };
-            return { ...prev, items };
-        });
+        const newItems = [...data.items];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setData(prev => ({ ...prev, items: newItems }));
     };
 
     const addItem = () => {
-        setFormData((prev) => ({
-            ...prev,
-            items: [...prev.items, { part_no: '', nomenclature: '', total: '', remarks: '' }],
-        }));
+        const itemSchema = INITIAL_STATES[selectedTemplate.id].items[0];
+        const newItem = Object.keys(itemSchema).reduce((acc, key) => ({ ...acc, [key]: '' }), {});
+        setData(prev => ({ ...prev, items: [...prev.items, newItem] }));
     };
 
     const removeItem = (index) => {
-        setFormData((prev) => ({
+        if (data.items.length <= 1) return;
+        setData(prev => ({
             ...prev,
             items: prev.items.filter((_, i) => i !== index),
         }));
@@ -119,29 +116,156 @@ export default function VoucherModal({ onClose, ticketId }) {
         setGenerating(true);
         setError('');
         try {
-            let payload;
-            if (selectedTemplate.type === 'STRICT_SCHEMA') {
-                payload = {
-                    ...formData,
-                    ticket_id: ticketId
-                };
-            } else {
-                payload = {
-                    ticket_id: ticketId,
-                    data: genericData
-                };
-            }
-
-            await api.post(selectedTemplate.endpoint, payload);
-            // Just close the modal on success as requested
+            await api.post(selectedTemplate.endpoint, { ...data, ticket_id: ticketId });
             onClose();
         } catch (err) {
             console.error('Document generation failed:', err);
-            setError(err.response?.data?.detail || 'Failed to generate document. Please try again.');
+            setError(err.response?.data?.detail || 'Failed to generate document.');
         } finally {
             setGenerating(false);
         }
     };
+
+    const renderFormFields = () => {
+        if (!selectedTemplate) return null;
+
+        switch (selectedTemplate.id) {
+            case 'voucher':
+                return renderVoucherFields();
+            case 'outbound_delivery':
+                return renderOutboundFields();
+            case 'voucher_variable_qty':
+                return renderVariableQtyFields();
+            case 'voucher_title':
+                return renderTitleFields();
+            case 'voucher_explanation':
+                return renderExplanationFields();
+            default:
+                return null;
+        }
+    };
+
+    const renderVoucherFields = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-orange-600 uppercase">IV Details</p>
+                    {['iv_no', 'unit_iv', 'stn_iv', 'date_iv'].map(f => (
+                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    ))}
+                </div>
+                <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-blue-600 uppercase">RV Details</p>
+                    {['rv_no', 'unit_rv', 'stn_rv', 'date_rv'].map(f => (
+                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    ))}
+                </div>
+            </div>
+            <div className="space-y-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Body</p>
+                {['issued_to', 'compliance', 'auth'].map(f => (
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                ))}
+            </div>
+            {renderItemTable(['part_no', 'nomenclature', 'total', 'remarks'])}
+        </div>
+    );
+
+    const renderOutboundFields = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-3">
+                {['shipment_no', 'shipment_date', 'class_name', 'obd_from', 'obd_to', 'obd_creation_date', 'str_no', 'tracking_number', 'str_date', 'sto_no', 'priority', 'type_of_str', 'authority', 'from_location', 'to_location', 'sus_no', 'ibd_number'].map(f => (
+                    <div key={f} className="space-y-1">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase">{f.replace(/_/g, ' ')}</label>
+                        <Input value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-7 text-[11px]" />
+                    </div>
+                ))}
+            </div>
+            {renderItemTable(['cos_section', 'part_number', 'sap_number', 'material_description', 'batch_no', 'serial_no', 'au', 'demand_qty', 'obd_qty', 'sub_depot'])}
+        </div>
+    );
+
+    const renderVariableQtyFields = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+                {['iv_no', 'rv_no', 'unit_iv', 'unit_rv', 'stn_iv', 'stn_rv', 'date_iv', 'date_rv', 'issued_to', 'compliance', 'auth', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                ))}
+            </div>
+            {renderItemTable(['part_no', 'nomenclature', 'hq', 'p', 'q', 'total'])}
+        </div>
+    );
+
+    const renderTitleFields = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+                {['iv_no', 'rv_no', 'date_iv', 'date_rv', 'unit_iv', 'unit_rv', 'pin_iv', 'pin_rv', 'station_iv', 'station_rv', 'issued_to', 'compliance', 'authority', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                ))}
+            </div>
+            {renderItemTable(['vehicle_type', 'ba_no', 'au', 'qty', 'remarks'])}
+        </div>
+    );
+
+    const renderExplanationFields = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+                {['iv_no', 'rv_no', 'date_iv', 'date_rv', 'unit_iv', 'unit_rv', 'stn_iv', 'stn_rv', 'center_heading', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                ))}
+            </div>
+            <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">Paragraph Text</label>
+                <textarea
+                    className="w-full h-24 p-2 text-xs border rounded-md"
+                    value={data.paragraph_text}
+                    onChange={e => updateField('paragraph_text', e.target.value)}
+                />
+            </div>
+            {renderItemTable(['part_no', 'nomenclature', 'au', 'qty', 'remarks'])}
+        </div>
+    );
+
+    const renderItemTable = (fields) => (
+        <div className="space-y-2">
+            <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Items List</p>
+                <button onClick={addItem} className="text-[10px] font-bold text-orange-600 hover:text-orange-700">+ ADD ITEM</button>
+            </div>
+            <div className="border rounded-lg overflow-hidden border-slate-100 shadow-sm overflow-x-auto">
+                <table className="w-full text-[10px]">
+                    <thead className="bg-slate-50 border-b border-slate-100 text-slate-500">
+                        <tr>
+                            <th className="px-2 py-2 text-left">#</th>
+                            {fields.map(f => (
+                                <th key={f} className="px-2 py-2 text-left uppercase tracking-tighter">{f.replace('_', ' ')}</th>
+                            ))}
+                            <th className="px-2 py-2 w-8"></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                        {data.items.map((item, idx) => (
+                            <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                                <td className="px-2 py-1.5 text-slate-400 font-medium">{idx + 1}</td>
+                                {fields.map(f => (
+                                    <td key={f} className="px-1 py-1">
+                                        <Input value={item[f]} onChange={e => updateItem(idx, f, e.target.value)} className="h-7 text-[10px] border-transparent hover:border-slate-200 focus:border-orange-400 px-1" />
+                                    </td>
+                                ))}
+                                <td className="px-2 py-1 text-center">
+                                    {data.items.length > 1 && (
+                                        <button onClick={() => removeItem(idx)} className="text-slate-300 hover:text-red-500 transition-colors">
+                                            <Trash2 size={12} />
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
 
     return (
         <motion.div
@@ -149,275 +273,59 @@ export default function VoucherModal({ onClose, ticketId }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
-            onClick={(e) => e.target === e.currentTarget && onClose()}
         >
             <motion.div
                 initial={{ scale: 0.95, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col"
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 flex items-center justify-between flex-shrink-0">
+                <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex items-center justify-between border-b border-white/5">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-orange-500/20 rounded-lg">
-                            <FileText className="w-5 h-5 text-orange-400" />
+                        <div className="p-2 bg-orange-500/10 rounded-lg">
+                            <FileText className="w-5 h-5 text-orange-500" />
                         </div>
                         <div>
                             <h2 className="text-white font-bold text-lg">Generate Document</h2>
-                            <p className="text-slate-400 text-xs mt-0.5">
-                                {step === 'select' ? 'Select a document template' : selectedTemplate?.name}
-                            </p>
+                            <p className="text-slate-400 text-xs">{step === 'select' ? 'Choose Template' : selectedTemplate.name}</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 transition-colors"><X size={20} /></button>
                 </div>
 
-                {/* Step: Template Selection */}
-                {step === 'select' && (
-                    <div className="p-6 space-y-3 overflow-y-auto">
-                        <p className="text-sm text-slate-500 mb-4">Choose the document type you want to generate:</p>
-                        {TEMPLATES.map((template) => (
-                            <button
-                                key={template.id}
-                                onClick={() => handleTemplateSelect(template)}
-                                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50/50 transition-all duration-200 text-left group"
-                            >
-                                <span className="text-3xl">{template.icon}</span>
-                                <div className="flex-1">
-                                    <p className="font-semibold text-slate-800 group-hover:text-orange-700">{template.name}</p>
-                                    <p className="text-xs text-slate-500 mt-0.5">{template.description}</p>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-500 transition-colors" />
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* Step: Fill Details */}
-                {step === 'fill' && (
-                    <div className="overflow-y-auto flex-1 p-6 space-y-6">
-                        {selectedTemplate.type === 'STRICT_SCHEMA' ? (
-                            <>
-                                {/* IV / RV header row */}
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Header Details</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-3">
-                                            <p className="text-xs font-bold text-orange-600 uppercase">Issue Voucher (IV)</p>
-                                            {[
-                                                { label: 'IV No.', key: 'iv_no', placeholder: 'e.g. IV-2024-001' },
-                                                { label: 'Unit', key: 'unit_iv', placeholder: 'e.g. 101 EME Bn' },
-                                                { label: 'Station', key: 'stn_iv', placeholder: 'e.g. Delhi Cantt' },
-                                                { label: 'Date', key: 'date_iv', placeholder: 'e.g. 15 Feb 2025' },
-                                            ].map(({ label, key, placeholder }) => (
-                                                <div key={key} className="space-y-1">
-                                                    <label className="text-xs font-medium text-slate-600">{label}</label>
-                                                    <Input
-                                                        placeholder={placeholder}
-                                                        value={formData[key]}
-                                                        onChange={(e) => updateField(key, e.target.value)}
-                                                        className="text-sm h-8 border-slate-200 focus:border-orange-400 focus:ring-orange-400"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="space-y-3">
-                                            <p className="text-xs font-bold text-blue-600 uppercase">Receipt Voucher (RV)</p>
-                                            {[
-                                                { label: 'RV No.', key: 'rv_no', placeholder: 'e.g. RV-2024-001' },
-                                                { label: 'Unit', key: 'unit_rv', placeholder: 'e.g. 202 Arty Bde' },
-                                                { label: 'Station', key: 'stn_rv', placeholder: 'e.g. Pune' },
-                                                { label: 'Date', key: 'date_rv', placeholder: 'e.g. 15 Feb 2025' },
-                                            ].map(({ label, key, placeholder }) => (
-                                                <div key={key} className="space-y-1">
-                                                    <label className="text-xs font-medium text-slate-600">{label}</label>
-                                                    <Input
-                                                        placeholder={placeholder}
-                                                        value={formData[key]}
-                                                        onChange={(e) => updateField(key, e.target.value)}
-                                                        className="text-sm h-8 border-slate-200 focus:border-blue-400 focus:ring-blue-400"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
+                <div className="flex-1 overflow-y-auto p-6">
+                    {step === 'select' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {TEMPLATES.map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => handleTemplateSelect(t)}
+                                    className="p-4 rounded-xl border-2 border-slate-50 hover:border-orange-500 hover:bg-orange-50/30 text-left transition-all group"
+                                >
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <span className="text-2xl">{t.icon}</span>
+                                        <p className="font-bold text-slate-800 group-hover:text-orange-950">{t.name}</p>
                                     </div>
-                                </div>
-
-                                {/* Body fields */}
-                                <div>
-                                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Voucher Body</h3>
-                                    <div className="space-y-3">
-                                        {[
-                                            { label: 'Issued To', key: 'issued_to', placeholder: 'Name / Unit receiving the items' },
-                                            { label: 'In Compliance With', key: 'compliance', placeholder: 'Order / Authority reference' },
-                                            { label: 'Auth', key: 'auth', placeholder: 'Authorisation reference number' },
-                                        ].map(({ label, key, placeholder }) => (
-                                            <div key={key} className="space-y-1">
-                                                <label className="text-xs font-medium text-slate-600">{label}</label>
-                                                <Input
-                                                    placeholder={placeholder}
-                                                    value={formData[key]}
-                                                    onChange={(e) => updateField(key, e.target.value)}
-                                                    className="text-sm border-slate-200 focus:border-orange-400 focus:ring-orange-400"
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Items table */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Line Items</h3>
-                                        <button
-                                            type="button"
-                                            onClick={addItem}
-                                            className="text-xs font-semibold text-orange-600 hover:text-orange-700 px-3 py-1 rounded-lg border border-orange-200 hover:bg-orange-50 transition-colors"
-                                        >
-                                            + Add Item
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        {/* Column headers */}
-                                        <div className="grid grid-cols-[auto_1fr_1fr_80px_80px] gap-2 px-1">
-                                            {['#', 'Part No.', 'Nomenclature', 'Total', 'Remarks'].map((h) => (
-                                                <span key={h} className="text-[10px] font-bold text-slate-400 uppercase">{h}</span>
-                                            ))}
-                                        </div>
-                                        {formData.items.map((item, idx) => (
-                                            <div key={idx} className="grid grid-cols-[24px_1fr_1fr_80px_80px] gap-2 items-center">
-                                                <span className="text-xs text-slate-400 text-center">{idx + 1}</span>
-                                                <Input
-                                                    placeholder="Part no."
-                                                    value={item.part_no}
-                                                    onChange={(e) => updateItem(idx, 'part_no', e.target.value)}
-                                                    className="text-xs h-8 border-slate-200"
-                                                />
-                                                <Input
-                                                    placeholder="Description"
-                                                    value={item.nomenclature}
-                                                    onChange={(e) => updateItem(idx, 'nomenclature', e.target.value)}
-                                                    className="text-xs h-8 border-slate-200"
-                                                />
-                                                <Input
-                                                    placeholder="Qty"
-                                                    value={item.total}
-                                                    onChange={(e) => updateItem(idx, 'total', e.target.value)}
-                                                    className="text-xs h-8 border-slate-200"
-                                                />
-                                                <div className="flex gap-1">
-                                                    <Input
-                                                        placeholder="Note"
-                                                        value={item.remarks}
-                                                        onChange={(e) => updateItem(idx, 'remarks', e.target.value)}
-                                                        className="text-xs h-8 border-slate-200"
-                                                    />
-                                                    {formData.items.length > 1 && (
-                                                        <button
-                                                            onClick={() => removeItem(idx)}
-                                                            className="flex-shrink-0 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                        >
-                                                            <X className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="space-y-6">
-                                <div className="p-4 rounded-xl bg-orange-50 border border-orange-100">
-                                    <p className="text-xs font-semibold text-orange-800 flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                                        On-Demand Configuration
-                                    </p>
-                                    <p className="text-[11px] text-orange-600 mt-1">This template uses a generic format. I am setting it up with default dummy data as requested.</p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-600">Document Title / Subject</label>
-                                        <Input
-                                            placeholder="Enter title..."
-                                            value={genericData.title}
-                                            onChange={(e) => updateGenericField('title', e.target.value)}
-                                            className="text-sm border-slate-200 group-hover:border-orange-200 transition-colors"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-600">Reference Date</label>
-                                        <Input
-                                            placeholder="e.g. 23 Feb 2025"
-                                            value={genericData.date}
-                                            onChange={(e) => updateGenericField('date', e.target.value)}
-                                            className="text-sm border-slate-200"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-slate-600">Explanation / Statement</label>
-                                        <textarea
-                                            placeholder="Write your explanation here..."
-                                            value={genericData.explanation}
-                                            onChange={(e) => updateGenericField('explanation', e.target.value)}
-                                            className="w-full min-h-[100px] p-3 text-sm rounded-lg border border-slate-200 focus:border-orange-400 focus:ring-1 focus:ring-orange-400 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {error && (
-                            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
-                                {error}
-                            </div>
-                        )}
-                    </div>
-                )}
+                                    <p className="text-xs text-slate-500">{t.description}</p>
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        renderFormFields()
+                    )}
+                </div>
 
                 {/* Footer */}
-                <div className="flex-shrink-0 px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                    {step === 'fill' && (
-                        <button
-                            onClick={() => setStep('select')}
-                            className="text-sm text-slate-500 hover:text-slate-700 font-medium transition-colors"
-                        >
-                            ← Back
-                        </button>
-                    )}
-                    <div className="flex items-center gap-3 ml-auto">
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="text-slate-500 hover:text-slate-700"
-                        >
-                            Cancel
-                        </Button>
+                <div className="px-6 py-4 border-t bg-slate-50/80 backdrop-blur-md flex items-center justify-between">
+                    {step === 'fill' ? (
+                        <button onClick={() => setStep('select')} className="text-xs font-bold text-slate-400 hover:text-slate-600">← CHANGE TEMPLATE</button>
+                    ) : <div></div>}
+                    <div className="flex gap-2">
+                        <Button variant="ghost" onClick={onClose}>Cancel</Button>
                         {step === 'fill' && (
-                            <Button
-                                onClick={handleGenerate}
-                                disabled={generating}
-                                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-5 shadow-md shadow-orange-500/20 disabled:opacity-60"
-                            >
-                                {generating ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Generating…
-                                    </>
-                                ) : (
-                                    <>
-                                        <FileCheck className="w-4 h-4 mr-2" />
-                                        Generate Document
-                                    </>
-                                )}
+                            <Button onClick={handleGenerate} disabled={generating} className="bg-orange-600 hover:bg-orange-700 text-white font-bold min-w-[120px]">
+                                {generating ? <Loader2 className="animate-spin" /> : <><FileCheck className="mr-2" size={16} /> GENERATE</>}
                             </Button>
                         )}
                     </div>

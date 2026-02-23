@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright
 import os
 
 
-def html_to_pdf(html_path: str, pdf_path: str):
+def html_to_pdf(html_path: str, pdf_path: str, landscape: bool = False):
 
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
 
@@ -17,6 +17,7 @@ def html_to_pdf(html_path: str, pdf_path: str):
             path=pdf_path,
             format="A4",
             print_background=True,
+            landscape=landscape
         )
 
         browser.close()
