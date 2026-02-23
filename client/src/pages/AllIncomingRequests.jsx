@@ -20,6 +20,13 @@ const PRIORITY_DOT = {
     LOW: 'bg-blue-500',
 };
 
+const PRIORITY_ROW_BG = {
+    CRITICAL: 'bg-red-50/80 hover:bg-red-100/80 border-red-100',
+    HIGH: 'bg-orange-50/80 hover:bg-orange-100/80 border-orange-100',
+    MEDIUM: 'bg-yellow-50/80 hover:bg-yellow-100/80 border-yellow-100',
+    LOW: 'bg-blue-50/80 hover:bg-blue-100/80 border-blue-100',
+};
+
 export default function AllIncomingRequests() {
     const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
@@ -154,7 +161,7 @@ export default function AllIncomingRequests() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 8 }}
                             transition={{ delay: i * 0.03 }}
-                            className="grid grid-cols-[3rem_2fr_3fr_7rem_8rem_7rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-orange-50/40 transition-all duration-200 group cursor-pointer"
+                            className={`grid grid-cols-[3rem_2fr_3fr_7rem_8rem_7rem] items-center gap-4 px-5 py-4 border-b last:border-0 transition-all duration-200 group cursor-pointer ${PRIORITY_ROW_BG[ticket.priority] || 'bg-white/20 hover:bg-slate-50/40 border-slate-200'}`}
                             onClick={() => navigate(`/tickets/${ticket.id}`)}
                         >
                             {/* ID */}

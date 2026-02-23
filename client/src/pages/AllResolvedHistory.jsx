@@ -13,6 +13,12 @@ const PRIORITY_BADGE = {
 const PRIORITY_DOT = {
     CRITICAL: 'bg-red-500', HIGH: 'bg-orange-500', MEDIUM: 'bg-yellow-500', LOW: 'bg-blue-500',
 };
+const PRIORITY_ROW_BG = {
+    CRITICAL: 'bg-red-50/80 hover:bg-red-100/80 border-red-100',
+    HIGH: 'bg-orange-50/80 hover:bg-orange-100/80 border-orange-100',
+    MEDIUM: 'bg-yellow-50/80 hover:bg-yellow-100/80 border-yellow-100',
+    LOW: 'bg-blue-50/80 hover:bg-blue-100/80 border-blue-100',
+};
 
 export default function AllResolvedHistory() {
     const navigate = useNavigate();
@@ -84,7 +90,7 @@ export default function AllResolvedHistory() {
                     {resolved.length > 0 ? resolved.map((ticket, i) => (
                         <motion.div key={ticket.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ delay: i * 0.03 }}
                             onClick={() => navigate(`/tickets/${ticket.id}`)}
-                            className="grid grid-cols-[3.5rem_2fr_2.5fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-green-50/40 transition-all duration-200 cursor-pointer group">
+                            className={`grid grid-cols-[3.5rem_2fr_2.5fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b last:border-0 transition-all duration-200 cursor-pointer group ${PRIORITY_ROW_BG[ticket.priority] || 'bg-white/20 hover:bg-slate-50/40 border-slate-200'}`}>
                             <span className="text-xs font-bold text-slate-400">#{ticket.id}</span>
                             <div className="flex items-center gap-2 min-w-0">
                                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_DOT[ticket.priority] ?? 'bg-slate-400'}`} />

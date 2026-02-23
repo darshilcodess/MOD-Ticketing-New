@@ -20,6 +20,13 @@ const PRIORITY_DOT = {
     LOW: 'bg-blue-500',
 };
 
+const PRIORITY_ROW_BG = {
+    CRITICAL: 'bg-red-50/80 hover:bg-red-100/80 border-red-100',
+    HIGH: 'bg-orange-50/80 hover:bg-orange-100/80 border-orange-100',
+    MEDIUM: 'bg-yellow-50/80 hover:bg-yellow-100/80 border-yellow-100',
+    LOW: 'bg-blue-50/80 hover:bg-blue-100/80 border-blue-100',
+};
+
 export default function AllAssignments() {
     const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
@@ -114,8 +121,8 @@ export default function AllAssignments() {
                             key={p}
                             onClick={() => setPriorityFilter(p)}
                             className={`px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${priorityFilter === p
-                                    ? 'bg-green-600 text-white border-green-600 shadow-sm'
-                                    : 'bg-transparent text-slate-500 border-slate-200 hover:border-green-300 hover:text-green-600'
+                                ? 'bg-green-600 text-white border-green-600 shadow-sm'
+                                : 'bg-transparent text-slate-500 border-slate-200 hover:border-green-300 hover:text-green-600'
                                 }`}
                         >
                             {p}
@@ -149,7 +156,7 @@ export default function AllAssignments() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 8 }}
                             transition={{ delay: i * 0.03 }}
-                            className="grid grid-cols-[3.5rem_2fr_3fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-green-50/40 transition-all duration-200 group"
+                            className={`grid grid-cols-[3.5rem_2fr_3fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b last:border-0 transition-all duration-200 group ${PRIORITY_ROW_BG[ticket.priority] || 'bg-white/20 hover:bg-slate-50/40 border-slate-200'}`}
                         >
                             {/* ID */}
                             <span className="text-xs font-bold text-slate-400">#{ticket.id}</span>
