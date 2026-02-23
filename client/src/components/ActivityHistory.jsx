@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, AlertCircle, Clock, ArrowRight } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, ArrowRight, MessageSquare, Building, Send, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 
 /**
@@ -15,28 +15,18 @@ export default function ActivityHistory({ tickets, limit = 15, viewAllRoute }) {
     const navigate = useNavigate();
 
     const activities = tickets.flatMap(ticket => {
-        const events = [];
-        events.push({
-            id: `${ticket.id}_created`,
+        const history = ticket.history || [];
+        return history.map((event, idx) => ({
+            id: `${ticket.id}_${idx}_${event.timestamp}`,
             ticketId: ticket.id,
             title: ticket.title,
-            type: 'CREATED',
-            date: new Date(ticket.created_at),
+            type: event.event,
+            date: new Date(event.timestamp),
             priority: ticket.priority,
             status: ticket.status,
-        });
-        if (ticket.status === 'RESOLVED') {
-            events.push({
-                id: `${ticket.id}_resolved`,
-                ticketId: ticket.id,
-                title: ticket.title,
-                type: 'RESOLVED',
-                date: ticket.updated_at ? new Date(ticket.updated_at) : new Date(ticket.created_at),
-                priority: ticket.priority,
-                status: ticket.status,
-            });
-        }
-        return events;
+            actor: event.actor,
+            notes: event.notes
+        }));
     }).sort((a, b) => b.date - a.date);
 
     const visible = activities.slice(0, limit);
@@ -95,24 +85,56 @@ export default function ActivityHistory({ tickets, limit = 15, viewAllRoute }) {
                                                 onClick={() => navigate(`/tickets/${activity.ticketId}`)}
                                             >
                                                 <div className="flex flex-col items-center z-10">
-                                                    <div className={`w-8 h-8 rounded-full border-[3px] border-white shadow-md flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${activity.type === 'CREATED' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
-                                                        {activity.type === 'CREATED' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                                                    <div className={`w-8 h-8 rounded-full border-[3px] border-white shadow-md flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${activity.type === 'CREATED' ? 'bg-blue-100 text-blue-600' :
+                                                            activity.type === 'ALLOCATED' ? 'bg-purple-100 text-purple-600' :
+                                                                activity.type === 'MARKED_FOR_REVIEW' ? 'bg-yellow-100 text-yellow-600' :
+                                                                    activity.type === 'APPROVED_AND_CLOSED' ? 'bg-green-100 text-green-600' :
+                                                                        activity.type === 'REALLOCATED_TO_G1' ? 'bg-red-100 text-red-600' :
+                                                                            activity.type === 'REALLOCATED_TO_SAME_TEAM' ? 'bg-amber-100 text-amber-600' :
+                                                                                activity.type === 'COMMENT_ADDED' ? 'bg-orange-100 text-orange-600' :
+                                                                                    'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                        {activity.type === 'CREATED' ? <Building size={14} /> :
+                                                            activity.type === 'ALLOCATED' ? <ArrowRight size={14} /> :
+                                                                activity.type === 'MARKED_FOR_REVIEW' ? <Clock size={14} /> :
+                                                                    activity.type === 'APPROVED_AND_CLOSED' ? <Check size={14} /> :
+                                                                        activity.type === 'REALLOCATED_TO_G1' ? <Send size={14} className="rotate-180" /> :
+                                                                            activity.type === 'REALLOCATED_TO_SAME_TEAM' ? <RotateCcw size={14} /> :
+                                                                                activity.type === 'COMMENT_ADDED' ? <MessageSquare size={14} /> :
+                                                                                    <AlertCircle size={14} />}
                                                     </div>
                                                     <div className="mt-3 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-slate-100 w-full hover:shadow-md transition-shadow duration-200">
                                                         <div className="flex items-center justify-between mb-1">
-                                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${activity.type === 'CREATED' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
-                                                                {activity.type}
+                                                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${activity.type === 'CREATED' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    activity.type === 'ALLOCATED' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                                        activity.type === 'MARKED_FOR_REVIEW' ? 'bg-yellow-50 text-yellow-600 border-yellow-100' :
+                                                                            activity.type === 'APPROVED_AND_CLOSED' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                                                activity.type === 'REALLOCATED_TO_G1' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                                                    activity.type === 'REALLOCATED_TO_SAME_TEAM' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                                        activity.type === 'COMMENT_ADDED' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                                                            'bg-slate-50 text-slate-600 border-slate-100'
+                                                                }`}>
+                                                                {activity.type.replace(/_/g, ' ')}
                                                             </span>
                                                             <span className="text-[9px] text-slate-400 font-medium whitespace-nowrap">
                                                                 {activity.date.toLocaleDateString()}
                                                             </span>
                                                         </div>
-                                                        <h4 className="font-bold text-slate-800 text-xs line-clamp-1 mb-0.5" title={activity.title}>
-                                                            {activity.title}
-                                                        </h4>
-                                                        <span className={`text-[9px] font-bold ${activity.priority === 'CRITICAL' ? 'text-red-500' : activity.priority === 'HIGH' ? 'text-orange-500' : activity.priority === 'MEDIUM' ? 'text-yellow-600' : 'text-blue-500'}`}>
-                                                            {activity.priority}
-                                                        </span>
+                                                        <div className="flex items-center gap-1.5 mb-0.5">
+                                                            <h4 className="font-bold text-slate-800 text-xs line-clamp-1" title={activity.title}>
+                                                                {activity.title}
+                                                            </h4>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-[9px] font-bold ${activity.priority === 'CRITICAL' ? 'text-red-500' : activity.priority === 'HIGH' ? 'text-orange-500' : activity.priority === 'MEDIUM' ? 'text-yellow-600' : 'text-blue-500'}`}>
+                                                                {activity.priority}
+                                                            </span>
+                                                            {activity.actor && (
+                                                                <span className="text-[8px] text-slate-400 font-medium italic">
+                                                                    by {activity.actor}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

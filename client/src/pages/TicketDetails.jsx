@@ -4,7 +4,8 @@ import api from '../services/api';
 import { motion } from 'framer-motion';
 import {
     ArrowLeft, Clock, CheckCircle2, AlertCircle,
-    Building, User, MessageSquare, History, FileText, FileSearch
+    Building, User, MessageSquare, History, FileText, FileSearch,
+    Send, RotateCcw, ArrowRight
 } from 'lucide-react';
 import TicketComments from '../components/TicketComments';
 
@@ -28,12 +29,13 @@ const PRIORITY_BADGE = {
     LOW: 'bg-blue-500 text-white border-blue-600',
 };
 const HISTORY_STYLES = {
-    CREATED: { dot: 'bg-blue-500', text: 'text-blue-700', label: '🆕 Created' },
-    ALLOCATED: { dot: 'bg-orange-500', text: 'text-orange-700', label: '📋 Allocated to Team' },
-    MARKED_FOR_REVIEW: { dot: 'bg-yellow-500', text: 'text-yellow-700', label: '🔍 Marked for Review' },
-    APPROVED_AND_CLOSED: { dot: 'bg-green-500', text: 'text-green-700', label: '✅ Approved & Closed' },
-    REALLOCATED_TO_G1: { dot: 'bg-red-500', text: 'text-red-700', label: '⬆ Sent back to G1' },
-    REALLOCATED_TO_SAME_TEAM: { dot: 'bg-amber-500', text: 'text-amber-700', label: '↩ Returned to Team' },
+    CREATED: { dot: 'bg-blue-500', text: 'text-blue-700', label: '🆕 Created', icon: <Building size={12} /> },
+    ALLOCATED: { dot: 'bg-purple-500', text: 'text-purple-700', label: '📋 Allocated', icon: <ArrowRight size={12} /> },
+    MARKED_FOR_REVIEW: { dot: 'bg-yellow-500', text: 'text-yellow-700', label: '🔍 Marked for Review', icon: <Clock size={12} /> },
+    APPROVED_AND_CLOSED: { dot: 'bg-green-500', text: 'text-green-700', label: '✅ Approved & Closed', icon: <CheckCircle2 size={12} /> },
+    REALLOCATED_TO_G1: { dot: 'bg-red-500', text: 'text-red-700', label: '⬆ Sent back to G1', icon: <Send size={12} className="rotate-180" /> },
+    REALLOCATED_TO_SAME_TEAM: { dot: 'bg-amber-500', text: 'text-amber-700', label: '↩ Returned to Team', icon: <RotateCcw size={12} /> },
+    COMMENT_ADDED: { dot: 'bg-orange-500', text: 'text-orange-700', label: '💬 Comment Added', icon: <MessageSquare size={12} /> },
 };
 
 export default function TicketDetails() {
@@ -268,7 +270,9 @@ export default function TicketDetails() {
                                 const style = HISTORY_STYLES[event.event] || { dot: 'bg-slate-400', text: 'text-slate-600', label: event.event };
                                 return (
                                     <li key={idx} className="ml-6">
-                                        <span className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ${style.dot} ring-4 ring-white shadow-sm`} />
+                                        <span className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ${style.dot} ring-4 ring-white shadow-sm text-white`}>
+                                            {style.icon || null}
+                                        </span>
                                         <div className="flex flex-wrap items-baseline gap-x-2 mb-1">
                                             <span className={`text-xs font-bold uppercase ${style.text}`}>{style.label}</span>
                                             <span className="text-[10px] text-slate-400">{new Date(event.timestamp).toLocaleString()}</span>

@@ -45,6 +45,7 @@ class Ticket(Base):
 
     def append_history(self, event: str, actor_name: str, actor_role: str, team_id=None, team_name=None, notes=None):
         """Append a history event to the ticket's history JSON column."""
+        from sqlalchemy.orm.attributes import flag_modified
         current = self.history or []
         current.append({
             "event": event,
@@ -56,3 +57,4 @@ class Ticket(Base):
             "timestamp": dt.datetime.utcnow().isoformat()
         })
         self.history = current
+        flag_modified(self, "history")
