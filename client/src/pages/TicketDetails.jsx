@@ -4,7 +4,7 @@ import api from '../services/api';
 import { motion } from 'framer-motion';
 import {
     ArrowLeft, Clock, CheckCircle2, AlertCircle,
-    Building, User, MessageSquare, History
+    Building, User, MessageSquare, History, FileText, FileSearch
 } from 'lucide-react';
 import TicketComments from '../components/TicketComments';
 
@@ -180,6 +180,49 @@ export default function TicketDetails() {
                     )}
                 </div>
             </motion.div>
+
+            {/* ── Documents Section ──────────────────────────── */}
+            {ticket.documents && ticket.documents.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="rounded-2xl border border-white/40 bg-white/30 backdrop-blur-xl shadow-xl overflow-hidden"
+                >
+                    <div className="flex items-center gap-3 px-6 py-4 border-b border-white/40 bg-white/20">
+                        <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                            <FileText size={16} />
+                        </div>
+                        <h2 className="text-base font-bold text-slate-800">Associated Documents</h2>
+                    </div>
+                    <div className="p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {ticket.documents.map((doc) => (
+                                <div key={doc.id} className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-slate-200 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-orange-100 text-orange-600">
+                                            <FileText size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-slate-800 text-sm italic">Voucher</p>
+                                            <p className="text-[10px] text-slate-400 capitalize">{doc.document_type} • {new Date(doc.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={`${api.defaults.baseURL || 'http://localhost:8000/api/v1'}/documents/voucher/${doc.file_id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors shadow-sm"
+                                        title="View PDF"
+                                    >
+                                        <FileSearch size={16} />
+                                    </a>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {/* ── Comments Section ─────────────────────────── */}
             <motion.div

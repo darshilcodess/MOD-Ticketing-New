@@ -42,7 +42,10 @@ class TicketInDBBase(TicketBase):
     class Config:
         from_attributes = True
 
+from app.schemas.document import TicketDocumentSchema
+
 class Ticket(TicketInDBBase):
     creator: User
     assigned_team: Optional[TeamInDBBase] = None
     resolver: Optional[User] = None
+    documents: List[TicketDocumentSchema] = []

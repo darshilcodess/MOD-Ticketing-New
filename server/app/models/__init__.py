@@ -5,3 +5,4 @@ from app.models.team import Team  # noqa: F401
 from app.models.ticket import Ticket  # noqa: F401
 from app.models.comment import Comment  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
+from app.models.document import TicketDocument  # noqa: F401

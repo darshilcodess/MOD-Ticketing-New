@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, FileSearch, RotateCcw, SendToBack, ThumbsUp, CalendarDays } from 'lucide-react';
+import { Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, FileSearch, RotateCcw, SendToBack, ThumbsUp, CalendarDays, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
 import ActivityHistory from '../../components/ActivityHistory';
+import VoucherModal from '../../components/VoucherModal';
 
 export default function UnitDashboard() {
     const navigate = useNavigate();
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showVoucherModal, setShowVoucherModal] = useState(false);
+    const [createVoucher, setCreateVoucher] = useState(false);
     const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'MEDIUM' });
+    const [activeTicketId, setActiveTicketId] = useState(null);
 
     useEffect(() => {
         fetchTickets();
@@ -33,13 +37,26 @@ export default function UnitDashboard() {
     const handleCreateTicket = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/tickets/', newTicket);
+            const { data } = await api.post('/tickets/', newTicket);
             setShowCreateModal(false);
             setNewTicket({ title: '', description: '', priority: 'MEDIUM' });
             fetchTickets();
+
+            // Open voucher modal after ticket is created
+            if (createVoucher) {
+                setCreateVoucher(false);
+                setActiveTicketId(data.id);
+                setShowVoucherModal(true);
+            }
         } catch (error) {
             console.error("Failed to create ticket", error);
         }
+    };
+
+    const handleCloseCreateModal = () => {
+        setShowCreateModal(false);
+        setCreateVoucher(false);
+        setNewTicket({ title: '', description: '', priority: 'MEDIUM' });
     };
 
     const handleApprove = async (e, ticketId) => {
@@ -370,6 +387,7 @@ export default function UnitDashboard() {
                 <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
             </div>
 
+            {/* ── Create Ticket Modal ── */}
             <AnimatePresence>
                 {showCreateModal && (
                     <motion.div
@@ -429,8 +447,30 @@ export default function UnitDashboard() {
                                                 ))}
                                             </div>
                                         </div>
+
+                                        {/* ── Voucher Checkbox ── */}
+                                        <label className="flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-orange-200 bg-orange-50/50 hover:bg-orange-50 cursor-pointer transition-colors group">
+                                            <input
+                                                type="checkbox"
+                                                checked={createVoucher}
+                                                onChange={(e) => setCreateVoucher(e.target.checked)}
+                                                className="w-4 h-4 rounded border-orange-300 accent-orange-500 cursor-pointer"
+                                            />
+                                            <div className="flex items-center gap-2">
+                                                <FileText className="w-4 h-4 text-orange-500" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-slate-700 group-hover:text-orange-700 transition-colors">
+                                                        Generate a Voucher
+                                                    </p>
+                                                    <p className="text-xs text-slate-500">
+                                                        Opens the document generator after ticket is created
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </label>
+
                                         <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
-                                            <Button type="button" variant="ghost" onClick={() => setShowCreateModal(false)} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                                            <Button type="button" variant="ghost" onClick={handleCloseCreateModal} className="text-slate-600 hover:text-slate-900 hover:bg-slate-100">
                                                 Cancel
                                             </Button>
                                             <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-6">
@@ -442,6 +482,18 @@ export default function UnitDashboard() {
                             </Card>
                         </motion.div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showVoucherModal && (
+                    <VoucherModal
+                        ticketId={activeTicketId}
+                        onClose={() => {
+                            setShowVoucherModal(false);
+                            setActiveTicketId(null);
+                        }}
+                    />
                 )}
             </AnimatePresence>
         </div>
