@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
 import ActivityHistory from '../../components/ActivityHistory';
 import VoucherModal from '../../components/VoucherModal';
+import DashboardFilters from '../../components/DashboardFilters';
 
 export default function UnitDashboard() {
     const navigate = useNavigate();
@@ -16,8 +17,13 @@ export default function UnitDashboard() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showVoucherModal, setShowVoucherModal] = useState(false);
     const [createVoucher, setCreateVoucher] = useState(false);
-    const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'MEDIUM' });
     const [activeTicketId, setActiveTicketId] = useState(null);
+    const [pendingPriorityFilter, setPendingPriorityFilter] = useState('ALL');
+    const [pendingSortOrder, setPendingSortOrder] = useState('NEWEST');
+    const [activePriorityFilter, setActivePriorityFilter] = useState('ALL');
+    const [activeSortOrder, setActiveSortOrder] = useState('NEWEST');
+    const [resolvedPriorityFilter, setResolvedPriorityFilter] = useState('ALL');
+    const [resolvedSortOrder, setResolvedSortOrder] = useState('NEWEST');
 
     useEffect(() => {
         fetchTickets();
@@ -141,9 +147,16 @@ export default function UnitDashboard() {
                         <h2 className="text-xl font-bold text-slate-800 tracking-tight">Pending Review</h2>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
-                            {tickets.filter(t => t.status === 'RESOLVED').length} ACTION REQUIRED
+                        <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 text-[10px] font-extrabold border border-yellow-200 shadow-sm">
+                            {tickets.filter(t => t.status === 'RESOLVED').length} PENDING
                         </span>
+                        <DashboardFilters
+                            priorityFilter={pendingPriorityFilter}
+                            setPriorityFilter={setPendingPriorityFilter}
+                            sortOrder={pendingSortOrder}
+                            setSortOrder={setPendingSortOrder}
+                            themeColor="yellow"
+                        />
                         <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-yellow-600 cursor-pointer" onClick={() => navigate('/unit/pending-review')}>
                             View All <ArrowRight className="w-3 h-3 ml-1" />
                         </Button>
@@ -152,91 +165,100 @@ export default function UnitDashboard() {
 
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                     <AnimatePresence>
-                        {tickets.filter(t => t.status === 'RESOLVED').slice(0, 6).map((ticket, i) => (
-                            <motion.div
-                                key={ticket.id}
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.97 }}
-                                transition={{ delay: i * 0.05 }}
-                                className="group flex flex-col rounded-2xl border border-yellow-200/70 bg-white/70 backdrop-blur-xl shadow-md hover:shadow-xl hover:shadow-yellow-400/10 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
-                            >
-                                {/* Card header accent */}
-                                <div className="h-1.5 w-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400" />
+                        {tickets
+                            .filter(t => t.status === 'RESOLVED')
+                            .filter(t => pendingPriorityFilter === 'ALL' || t.priority === pendingPriorityFilter)
+                            .sort((a, b) => {
+                                if (pendingSortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+                                if (pendingSortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+                                return 0;
+                            })
+                            .slice(0, 6)
+                            .map((ticket, i) => (
+                                <motion.div
+                                    key={ticket.id}
+                                    initial={{ opacity: 0, y: 12 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.97 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="group flex flex-col rounded-2xl border border-yellow-200/70 bg-white/70 backdrop-blur-xl shadow-md hover:shadow-xl hover:shadow-yellow-400/10 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
+                                >
+                                    {/* Card header accent */}
+                                    <div className="h-1.5 w-full bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400" />
 
-                                {/* Title + meta row */}
-                                <div className="flex items-start gap-3 px-4 pt-4 pb-3">
-                                    <div className="mt-0.5 flex-shrink-0 p-2 rounded-xl bg-yellow-50 border border-yellow-200 shadow-sm">
-                                        <FileSearch className="w-4 h-4 text-yellow-600" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3
-                                            onClick={() => navigate(`/tickets/${ticket.id}`)}
-                                            className="font-bold text-slate-800 text-sm line-clamp-1 hover:text-yellow-700 cursor-pointer transition-colors"
-                                        >
-                                            {ticket.title}
-                                        </h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="flex items-center gap-1 text-[10px] text-slate-400">
-                                                <CalendarDays className="w-3 h-3" />
-                                                {new Date(ticket.created_at).toLocaleDateString()}
-                                            </span>
-                                            <span className="px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-[9px] font-bold border border-yellow-200 uppercase tracking-widest">
-                                                Pending Review
-                                            </span>
+                                    {/* Title + meta row */}
+                                    <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+                                        <div className="mt-0.5 flex-shrink-0 p-2 rounded-xl bg-yellow-50 border border-yellow-200 shadow-sm">
+                                            <FileSearch className="w-4 h-4 text-yellow-600" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3
+                                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                                className="font-bold text-slate-800 text-sm line-clamp-1 hover:text-yellow-700 cursor-pointer transition-colors"
+                                            >
+                                                {ticket.title}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="flex items-center gap-1 text-[10px] text-slate-400">
+                                                    <CalendarDays className="w-3 h-3" />
+                                                    {new Date(ticket.created_at).toLocaleDateString()}
+                                                </span>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-[9px] font-bold border border-yellow-200 uppercase tracking-widest">
+                                                    Pending Review
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Description */}
-                                <p className="px-4 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-                                    {ticket.description}
-                                </p>
+                                    {/* Description */}
+                                    <p className="px-4 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
+                                        {ticket.description}
+                                    </p>
 
-                                {/* Resolution notes block */}
-                                {ticket.resolution_notes && (
-                                    <div className="mx-4 mt-3 rounded-xl bg-amber-50 border border-amber-200/70 p-3">
-                                        <p className="text-[9px] font-bold uppercase tracking-widest text-amber-600 mb-1">Team's Resolution Note</p>
-                                        <p className="text-[11px] text-amber-900 leading-relaxed line-clamp-3 italic">
-                                            "{ticket.resolution_notes}"
-                                        </p>
-                                    </div>
-                                )}
+                                    {/* Resolution notes block */}
+                                    {ticket.resolution_notes && (
+                                        <div className="mx-4 mt-3 rounded-xl bg-amber-50 border border-amber-200/70 p-3">
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-amber-600 mb-1">Team's Resolution Note</p>
+                                            <p className="text-[11px] text-amber-900 leading-relaxed line-clamp-3 italic">
+                                                "{ticket.resolution_notes}"
+                                            </p>
+                                        </div>
+                                    )}
 
-                                {/* Divider */}
-                                <div className="mx-4 mt-4 border-t border-slate-100" />
+                                    {/* Divider */}
+                                    <div className="mx-4 mt-4 border-t border-slate-100" />
 
-                                {/* Action buttons */}
-                                <div className="px-4 pt-3 pb-4 flex flex-col gap-2">
-                                    {/* Primary — Approve */}
-                                    <button
-                                        onClick={(e) => handleApprove(e, ticket.id)}
-                                        className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xs font-bold py-2 shadow-sm shadow-green-400/30 hover:shadow-md hover:shadow-green-500/30 transition-all duration-200 cursor-pointer"
-                                    >
-                                        <ThumbsUp className="w-3.5 h-3.5" />
-                                        Approve &amp; Close
-                                    </button>
-
-                                    {/* Secondary row */}
-                                    <div className="grid grid-cols-2 gap-2">
+                                    {/* Action buttons */}
+                                    <div className="px-4 pt-3 pb-4 flex flex-col gap-2">
+                                        {/* Primary — Approve */}
                                         <button
-                                            onClick={(e) => handleReallocateToTeam(e, ticket.id)}
-                                            className="flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
+                                            onClick={(e) => handleApprove(e, ticket.id)}
+                                            className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-xs font-bold py-2 shadow-sm shadow-green-400/30 hover:shadow-md hover:shadow-green-500/30 transition-all duration-200 cursor-pointer"
                                         >
-                                            <RotateCcw className="w-3 h-3" />
-                                            Retry · Same Team
+                                            <ThumbsUp className="w-3.5 h-3.5" />
+                                            Approve &amp; Close
                                         </button>
-                                        <button
-                                            onClick={(e) => handleReallocateToG1(e, ticket.id)}
-                                            className="flex items-center justify-center gap-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
-                                        >
-                                            <SendToBack className="w-3 h-3" />
-                                            Return to G1
-                                        </button>
+
+                                        {/* Secondary row */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                onClick={(e) => handleReallocateToTeam(e, ticket.id)}
+                                                className="flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
+                                            >
+                                                <RotateCcw className="w-3 h-3" />
+                                                Retry · Same Team
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleReallocateToG1(e, ticket.id)}
+                                                className="flex items-center justify-center gap-1.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-[10px] font-bold py-1.5 transition-all duration-200 cursor-pointer"
+                                            >
+                                                <SendToBack className="w-3 h-3" />
+                                                Return to G1
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            ))}
                     </AnimatePresence>
                     {tickets.filter(t => t.status === 'RESOLVED').length === 0 && (
                         <div className="col-span-full py-10 text-center text-slate-400 bg-white/40 backdrop-blur-sm rounded-2xl border border-white/40 border-dashed">
@@ -260,9 +282,16 @@ export default function UnitDashboard() {
                             <h2 className="text-xl font-bold text-slate-800 tracking-tight">Active Tickets</h2>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 text-[10px] font-extrabold border border-orange-200 shadow-sm">
+                            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-700 text-[10px] font-extrabold border border-orange-200 shadow-sm">
                                 {tickets.filter(t => t.status === 'OPEN' || t.status === 'ALLOCATED').length} ACTIVE
                             </span>
+                            <DashboardFilters
+                                priorityFilter={activePriorityFilter}
+                                setPriorityFilter={setActivePriorityFilter}
+                                sortOrder={activeSortOrder}
+                                setSortOrder={setActiveSortOrder}
+                                themeColor="orange"
+                            />
                             <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-orange-600 cursor-pointer" onClick={() => navigate('/unit/active-tickets')}>
                                 View All <ArrowRight className="w-3 h-3 ml-1" />
                             </Button>
@@ -271,40 +300,49 @@ export default function UnitDashboard() {
 
                     <div className="grid gap-3 grid-cols-1">
                         <AnimatePresence>
-                            {tickets.filter(t => t.status === 'OPEN').slice(0, 5).map(ticket => (
-                                <Card
-                                    key={ticket.id}
-                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
-                                    className="group border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
-                                >
-                                    <div className={`h-1 w-full ${getPriorityStyles(ticket.priority).line}`} />
-                                    <CardHeader className="pb-2 pt-3 px-4">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="space-y-1 w-full">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${getPriorityStyles(ticket.priority).badge}`}>
-                                                        {ticket.priority}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-[10px] pt-1">
-                                                    <span className={`px-1.5 py-0.5 rounded font-medium border ${getStatusColor(ticket.status)}`}>
-                                                        {ticket.status}
-                                                    </span>
-                                                    <span className="flex items-center gap-1 text-slate-400">
-                                                        <Clock size={10} /> {new Date(ticket.created_at).toLocaleDateString()}
-                                                    </span>
+                            {tickets
+                                .filter(t => t.status === 'OPEN' || t.status === 'ALLOCATED')
+                                .filter(t => activePriorityFilter === 'ALL' || t.priority === activePriorityFilter)
+                                .sort((a, b) => {
+                                    if (activeSortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+                                    if (activeSortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+                                    return 0;
+                                })
+                                .slice(0, 5)
+                                .map(ticket => (
+                                    <Card
+                                        key={ticket.id}
+                                        onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                        className="group border border-white/40 bg-white/60 backdrop-blur-xl hover:bg-white/70 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
+                                    >
+                                        <div className={`h-1 w-full ${getPriorityStyles(ticket.priority).line}`} />
+                                        <CardHeader className="pb-2 pt-3 px-4">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="space-y-1 w-full">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="font-bold text-slate-800 line-clamp-1 text-sm">{ticket.title}</h3>
+                                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${getPriorityStyles(ticket.priority).badge}`}>
+                                                            {ticket.priority}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-[10px] pt-1">
+                                                        <span className={`px-1.5 py-0.5 rounded font-medium border ${getStatusColor(ticket.status)}`}>
+                                                            {ticket.status}
+                                                        </span>
+                                                        <span className="flex items-center gap-1 text-slate-400">
+                                                            <Clock size={10} /> {new Date(ticket.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="px-4 pb-3">
-                                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                                            {ticket.description}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                        </CardHeader>
+                                        <CardContent className="px-4 pb-3">
+                                            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                                                {ticket.description}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                         </AnimatePresence>
                         {tickets.filter(t => t.status === 'OPEN').length === 0 && (
                             <div className="col-span-full py-8 text-center text-slate-500 bg-white/40 backdrop-blur-sm rounded-xl border border-white/40 border-dashed">
@@ -323,9 +361,16 @@ export default function UnitDashboard() {
                             <h2 className="text-xl font-bold text-slate-800 tracking-tight">Resolved History</h2>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-extrabold border border-green-200 shadow-sm">
+                            <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 text-[10px] font-extrabold border border-green-200 shadow-sm">
                                 {tickets.filter(t => t.status === 'CLOSED').length} COMPLETED
                             </span>
+                            <DashboardFilters
+                                priorityFilter={resolvedPriorityFilter}
+                                setPriorityFilter={setResolvedPriorityFilter}
+                                sortOrder={resolvedSortOrder}
+                                setSortOrder={setResolvedSortOrder}
+                                themeColor="green"
+                            />
                             <Button variant="ghost" size="sm" className="h-8 text-xs text-slate-500 hover:text-green-600 cursor-pointer" onClick={() => navigate('/unit/resolved-history')}>
                                 View All <ArrowRight className="w-3 h-3 ml-1" />
                             </Button>
@@ -334,45 +379,54 @@ export default function UnitDashboard() {
 
                     <div className="grid gap-4 grid-cols-1">
                         <AnimatePresence>
-                            {tickets.filter(t => t.status === 'CLOSED').slice(0, 5).map(ticket => (
-                                <Card
-                                    key={ticket.id}
-                                    onClick={() => navigate(`/tickets/${ticket.id}`)}
-                                    className="group border border-white/40 bg-white/40 backdrop-blur-md opacity-80 hover:opacity-100 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
-                                >
-                                    <div className={`h-1 w-full bg-green-500`} />
-                                    <CardHeader className="pb-3 pt-4">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div className="space-y-1 w-full">
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-slate-700 line-clamp-1 text-lg decoration-slate-400/50">{ticket.title}</h3>
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-green-200 text-green-700 bg-green-50`}>
-                                                        CLOSED
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-xs pt-1">
-                                                    <span className="flex items-center gap-1 text-slate-400">
-                                                        <Clock size={12} /> {new Date(ticket.created_at).toLocaleDateString()}
-                                                    </span>
+                            {tickets
+                                .filter(t => t.status === 'CLOSED')
+                                .filter(t => resolvedPriorityFilter === 'ALL' || t.priority === resolvedPriorityFilter)
+                                .sort((a, b) => {
+                                    if (resolvedSortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+                                    if (resolvedSortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+                                    return 0;
+                                })
+                                .slice(0, 5)
+                                .map(ticket => (
+                                    <Card
+                                        key={ticket.id}
+                                        onClick={() => navigate(`/tickets/${ticket.id}`)}
+                                        className="group border border-white/40 bg-white/40 backdrop-blur-md opacity-80 hover:opacity-100 transition-all duration-300 overflow-hidden shadow-sm cursor-pointer"
+                                    >
+                                        <div className={`h-1 w-full bg-green-500`} />
+                                        <CardHeader className="pb-3 pt-4">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="space-y-1 w-full">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="font-bold text-slate-700 line-clamp-1 text-lg decoration-slate-400/50">{ticket.title}</h3>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-green-200 text-green-700 bg-green-50`}>
+                                                            CLOSED
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs pt-1">
+                                                        <span className="flex items-center gap-1 text-slate-400">
+                                                            <Clock size={12} /> {new Date(ticket.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed">
-                                            {ticket.description}
-                                        </p>
-                                        {ticket.resolution_notes && (
-                                            <div className="mt-3 p-3 bg-green-50/80 border border-green-200/60 rounded-md text-sm text-green-800">
-                                                <div className="flex items-center gap-2 font-bold mb-1 text-green-700">
-                                                    <CheckCircle2 size={14} /> Resolution
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-slate-500 line-clamp-2 mb-4 leading-relaxed">
+                                                {ticket.description}
+                                            </p>
+                                            {ticket.resolution_notes && (
+                                                <div className="mt-3 p-3 bg-green-50/80 border border-green-200/60 rounded-md text-sm text-green-800">
+                                                    <div className="flex items-center gap-2 font-bold mb-1 text-green-700">
+                                                        <CheckCircle2 size={14} /> Resolution
+                                                    </div>
+                                                    {ticket.resolution_notes}
                                                 </div>
-                                                {ticket.resolution_notes}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                ))}
                         </AnimatePresence>
                         {tickets.filter(t => t.status === 'CLOSED').length === 0 && (
                             <div className="col-span-full py-8 text-center text-slate-400 italic">

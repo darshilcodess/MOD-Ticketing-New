@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { Button } from '../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, Search, Filter, Clock, AlertTriangle } from 'lucide-react';
+import { Menu, Transition } from '@headlessui/react';
+import { Fragment } from 'react';
+import { ArrowLeft, CheckCircle2, Search, Filter, Clock, AlertTriangle, ChevronDown, Check } from 'lucide-react';
 
 const PRIORITY_BADGE = {
     CRITICAL: 'bg-red-50 text-red-600 border-red-200',
@@ -13,6 +16,12 @@ const PRIORITY_BADGE = {
 const PRIORITY_DOT = {
     CRITICAL: 'bg-red-500', HIGH: 'bg-orange-500', MEDIUM: 'bg-yellow-500', LOW: 'bg-blue-500',
 };
+const PRIORITY_ROW_BG = {
+    CRITICAL: 'bg-red-50/80 hover:bg-red-100/80 border-red-100',
+    HIGH: 'bg-orange-50/80 hover:bg-orange-100/80 border-orange-100',
+    MEDIUM: 'bg-yellow-50/80 hover:bg-yellow-100/80 border-yellow-100',
+    LOW: 'bg-blue-50/80 hover:bg-blue-100/80 border-blue-100',
+};
 
 export default function AllResolvedHistory() {
     const navigate = useNavigate();
@@ -20,6 +29,7 @@ export default function AllResolvedHistory() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     useEffect(() => { fetchTickets(); }, []);
 
@@ -32,7 +42,12 @@ export default function AllResolvedHistory() {
     const resolved = tickets
         .filter(t => t.status === 'CLOSED')
         .filter(t => priorityFilter === 'ALL' || t.priority === priorityFilter)
-        .filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase()));
+        .filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || t.description?.toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => {
+            if (sortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+            if (sortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+            return 0;
+        });
 
     if (loading) return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
 
@@ -59,14 +74,100 @@ export default function AllResolvedHistory() {
                     <input type="text" placeholder="Search by title or description…" value={search} onChange={e => setSearch(e.target.value)}
                         className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-400/40 focus:border-green-300 shadow-sm transition-all" />
                 </div>
-                <div className="flex items-center gap-2 bg-white/40 backdrop-blur-sm border border-white/40 rounded-xl px-3 py-1.5 shadow-sm">
-                    <Filter className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                    {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(p => (
-                        <button key={p} onClick={() => setPriorityFilter(p)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${priorityFilter === p ? 'bg-green-600 text-white border-green-600 shadow-sm' : 'bg-transparent text-slate-500 border-slate-200 hover:border-green-300 hover:text-green-600'}`}>
-                            {p}
-                        </button>
-                    ))}
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                    {/* Priority Dropdown */}
+                    <div className="relative w-full sm:w-auto z-20">
+                        <Menu as="div" className="relative inline-block text-left w-full sm:w-auto">
+                            <Menu.Button className="flex items-center justify-between w-full sm:w-44 px-4 py-2.5 rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm text-sm font-semibold text-slate-700 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-400/40 focus:border-green-300 shadow-sm transition-all">
+                                <span className="flex items-center gap-2">
+                                    <Filter className="w-4 h-4 text-green-600" />
+                                    {priorityFilter === 'ALL' ? 'All Priorities' : priorityFilter.charAt(0) + priorityFilter.slice(1).toLowerCase()}
+                                </span>
+                                <ChevronDown className="w-4 h-4 text-slate-400" />
+                            </Menu.Button>
+                            <Transition
+                                as={Fragment}
+                                enter="transition ease-out duration-100"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                            >
+                                <Menu.Items className="absolute right-0 sm:left-0 mt-2 w-full sm:w-44 origin-top-right rounded-xl bg-white/90 backdrop-blur-xl border border-white/60 shadow-lg ring-1 ring-black/5 focus:outline-none overflow-hidden pb-1 z-50">
+                                    <div className="py-1">
+                                        {[
+                                            { id: 'ALL', label: 'All Priorities' },
+                                            { id: 'CRITICAL', label: 'Critical', color: 'text-red-500', bg: 'bg-red-50' },
+                                            { id: 'HIGH', label: 'High', color: 'text-orange-500', bg: 'bg-orange-50' },
+                                            { id: 'MEDIUM', label: 'Medium', color: 'text-yellow-600', bg: 'bg-yellow-50' },
+                                            { id: 'LOW', label: 'Low', color: 'text-blue-500', bg: 'bg-blue-50' }
+                                        ].map((opt) => (
+                                            <Menu.Item key={opt.id}>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => setPriorityFilter(opt.id)}
+                                                        className={`${active || priorityFilter === opt.id ? 'bg-green-50/50' : ''
+                                                            } flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:text-green-700 transition-colors ${priorityFilter === opt.id ? 'font-bold' : 'font-medium'}`}
+                                                    >
+                                                        {opt.id !== 'ALL' && (
+                                                            <span className={`w-2 h-2 rounded-full ${opt.bg.replace('bg-', 'bg-').replace('-50', '-500')}`} />
+                                                        )}
+                                                        <span className="flex-1 text-left">{opt.label}</span>
+                                                        {priorityFilter === opt.id && <Check className="w-4 h-4 text-green-600" />}
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        ))}
+                                    </div>
+                                </Menu.Items>
+                            </Transition>
+                        </Menu>
+                    </div>
+
+                    {/* Sort Dropdown */}
+                    <div className="relative w-full sm:w-auto z-10">
+                        <Menu as="div" className="relative inline-block text-left w-full sm:w-auto">
+                            <Menu.Button className="flex items-center justify-between w-full sm:w-44 px-4 py-2.5 rounded-xl border border-white/40 bg-white/60 backdrop-blur-sm text-sm font-semibold text-slate-700 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-400/40 focus:border-green-300 shadow-sm transition-all">
+                                <span className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-slate-500" />
+                                    {sortOrder === 'NEWEST' ? 'Newest First' : 'Oldest First'}
+                                </span>
+                                <ChevronDown className="w-4 h-4 text-slate-400" />
+                            </Menu.Button>
+                            <Transition
+                                as={Fragment}
+                                enter="transition ease-out duration-100"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                            >
+                                <Menu.Items className="absolute right-0 sm:left-0 mt-2 w-full sm:w-44 origin-top-right rounded-xl bg-white/90 backdrop-blur-xl border border-white/60 shadow-lg ring-1 ring-black/5 focus:outline-none overflow-hidden pb-1 z-50">
+                                    <div className="py-1">
+                                        {[
+                                            { id: 'NEWEST', label: 'Newest First' },
+                                            { id: 'OLDEST', label: 'Oldest First' }
+                                        ].map((opt) => (
+                                            <Menu.Item key={opt.id}>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => setSortOrder(opt.id)}
+                                                        className={`${active || sortOrder === opt.id ? 'bg-slate-50' : ''
+                                                            } flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:text-slate-900 transition-colors ${sortOrder === opt.id ? 'font-bold' : 'font-medium'}`}
+                                                    >
+                                                        <span className="flex-1 text-left">{opt.label}</span>
+                                                        {sortOrder === opt.id && <Check className="w-4 h-4 text-slate-500" />}
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        ))}
+                                    </div>
+                                </Menu.Items>
+                            </Transition>
+                        </Menu>
+                    </div>
                 </div>
             </div>
 
@@ -84,7 +185,7 @@ export default function AllResolvedHistory() {
                     {resolved.length > 0 ? resolved.map((ticket, i) => (
                         <motion.div key={ticket.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ delay: i * 0.03 }}
                             onClick={() => navigate(`/tickets/${ticket.id}`)}
-                            className="grid grid-cols-[3.5rem_2fr_2.5fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b border-slate-200 last:border-0 bg-white/20 hover:bg-green-50/40 transition-all duration-200 cursor-pointer group">
+                            className={`grid grid-cols-[3.5rem_2fr_2.5fr_7rem_8rem_8rem] items-center gap-4 px-5 py-4 border-b last:border-0 transition-all duration-200 cursor-pointer group ${PRIORITY_ROW_BG[ticket.priority] || 'bg-white/20 hover:bg-slate-50/40 border-slate-200'}`}>
                             <span className="text-xs font-bold text-slate-400">#{ticket.id}</span>
                             <div className="flex items-center gap-2 min-w-0">
                                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_DOT[ticket.priority] ?? 'bg-slate-400'}`} />
