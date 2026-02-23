@@ -30,7 +30,7 @@ const EMPTY_VOUCHER = {
     items: [{ part_no: '', nomenclature: '', total: '', remarks: '' }],
 };
 
-export default function VoucherModal({ onClose }) {
+export default function VoucherModal({ onClose, ticketId }) {
     const [step, setStep] = useState('select'); // 'select' | 'fill'
     const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [formData, setFormData] = useState(EMPTY_VOUCHER);
@@ -72,13 +72,31 @@ export default function VoucherModal({ onClose }) {
         setGenerating(true);
         setError('');
         try {
-            const { data } = await api.post('/documents/voucher', formData);
+            // Include ticket_id in the payload
+            const payload = {
+                ...formData,
+                ticket_id: ticketId
+            };
+
+            const { data } = await api.post('/documents/voucher', payload);
+
             // Build the download URL and open PDF in a new tab
-            const baseURL = api.defaults.baseURL;
+            const baseURL = api.defaults.baseURL || 'http://localhost:8000/api/v1';
             const pdfUrl = `${baseURL}/documents/voucher/${data.file_id}`;
-            window.open(pdfUrl, '_blank');
-            onClose();
+
+            // Log for debugging
+            console.log('Opening PDF at:', pdfUrl);
+
+            // Try to open in new tab
+            const newWindow = window.open(pdfUrl, '_blank');
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                // Pop-up blocked, notify user or fallback
+                setError('Pop-up was blocked. Please allow pop-ups or use the link in the ticket details.');
+            } else {
+                onClose();
+            }
         } catch (err) {
+            console.error('Voucher generation failed:', err);
             setError(err.response?.data?.detail || 'Failed to generate voucher. Please try again.');
         } finally {
             setGenerating(false);

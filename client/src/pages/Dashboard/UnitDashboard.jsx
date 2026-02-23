@@ -17,6 +17,7 @@ export default function UnitDashboard() {
     const [showVoucherModal, setShowVoucherModal] = useState(false);
     const [createVoucher, setCreateVoucher] = useState(false);
     const [newTicket, setNewTicket] = useState({ title: '', description: '', priority: 'MEDIUM' });
+    const [activeTicketId, setActiveTicketId] = useState(null);
 
     useEffect(() => {
         fetchTickets();
@@ -36,7 +37,7 @@ export default function UnitDashboard() {
     const handleCreateTicket = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/tickets/', newTicket);
+            const { data } = await api.post('/tickets/', newTicket);
             setShowCreateModal(false);
             setNewTicket({ title: '', description: '', priority: 'MEDIUM' });
             fetchTickets();
@@ -44,6 +45,7 @@ export default function UnitDashboard() {
             // Open voucher modal after ticket is created
             if (createVoucher) {
                 setCreateVoucher(false);
+                setActiveTicketId(data.id);
                 setShowVoucherModal(true);
             }
         } catch (error) {
@@ -483,10 +485,15 @@ export default function UnitDashboard() {
                 )}
             </AnimatePresence>
 
-            {/* ── Voucher Modal ── */}
             <AnimatePresence>
                 {showVoucherModal && (
-                    <VoucherModal onClose={() => setShowVoucherModal(false)} />
+                    <VoucherModal
+                        ticketId={activeTicketId}
+                        onClose={() => {
+                            setShowVoucherModal(false);
+                            setActiveTicketId(null);
+                        }}
+                    />
                 )}
             </AnimatePresence>
         </div>

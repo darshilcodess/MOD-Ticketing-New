@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+import datetime as dt
 
 
 class VoucherItem(BaseModel):
@@ -10,6 +11,7 @@ class VoucherItem(BaseModel):
 
 
 class VoucherRequest(BaseModel):
+    ticket_id: Optional[int] = None
     # Issue Voucher (IV) fields
     iv_no: str
     unit_iv: str
@@ -34,3 +36,14 @@ class VoucherResponse(BaseModel):
     file_id: str
     file: str
     message: str = "Voucher generated successfully"
+
+
+class TicketDocumentSchema(BaseModel):
+    id: int
+    ticket_id: int
+    file_id: str
+    document_type: str
+    created_at: dt.datetime
+
+    class Config:
+        from_attributes = True

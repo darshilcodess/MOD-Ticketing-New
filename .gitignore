@@ -77,4 +77,5 @@ instance/
 .Trashes
 ehthumbs.db
 Thumbs.db
-server\temp
+server/temp
+server/app/temp/
