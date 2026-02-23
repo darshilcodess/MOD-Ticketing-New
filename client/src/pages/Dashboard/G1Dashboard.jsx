@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Inbox } from 'lucide-react';
+import DashboardFilters from '../../components/DashboardFilters';
 
 export default function G1Dashboard() {
     const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function G1Dashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [allocation, setAllocation] = useState({ team_id: '', priority: '' });
+    const [priorityFilter, setPriorityFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     useEffect(() => {
         fetchData();
@@ -35,7 +38,14 @@ export default function G1Dashboard() {
     };
 
     // Filter pending tickets for allocation view
-    const pendingTickets = tickets.filter(ticket => ticket.status === 'OPEN');
+    const pendingTickets = tickets
+        .filter(ticket => ticket.status === 'OPEN')
+        .filter(t => priorityFilter === 'ALL' || t.priority === priorityFilter)
+        .sort((a, b) => {
+            if (sortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+            if (sortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+            return 0;
+        });
 
     const handleAllocate = async (e) => {
         e.preventDefault();
@@ -82,10 +92,17 @@ export default function G1Dashboard() {
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Incoming Requests</h2>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
+                        <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-extrabold border border-orange-200 shadow-sm">
                             {pendingTickets.length} PENDING
                         </span>
-                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-orange-600 cursor-pointer" onClick={() => navigate('/g1/incoming')}>
+                        <DashboardFilters
+                            priorityFilter={priorityFilter}
+                            setPriorityFilter={setPriorityFilter}
+                            sortOrder={sortOrder}
+                            setSortOrder={setSortOrder}
+                            themeColor="orange"
+                        />
+                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-orange-600 cursor-pointer ml-1" onClick={() => navigate('/g1/incoming')}>
                             View All <ArrowRight className="w-4 h-4 ml-1" />
                         </Button>
                     </div>

@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, Briefcase, ArrowRight } from 'lucide-react';
 import ActivityHistory from '../../components/ActivityHistory';
+import DashboardFilters from '../../components/DashboardFilters';
 
 export default function TeamDashboard() {
     const navigate = useNavigate();
@@ -13,6 +14,8 @@ export default function TeamDashboard() {
     const [loading, setLoading] = useState(true);
     const [resolvingTicket, setResolvingTicket] = useState(null);
     const [resolutionNotes, setResolutionNotes] = useState('');
+    const [priorityFilter, setPriorityFilter] = useState('ALL');
+    const [sortOrder, setSortOrder] = useState('NEWEST');
 
     useEffect(() => {
         fetchTickets();
@@ -31,7 +34,14 @@ export default function TeamDashboard() {
     };
 
     // Filter for tickets that are currently allocated/assigned to the team for action
-    const assignedTickets = tickets.filter(t => t.status === 'ALLOCATED');
+    const assignedTickets = tickets
+        .filter(t => t.status === 'ALLOCATED')
+        .filter(t => priorityFilter === 'ALL' || t.priority === priorityFilter)
+        .sort((a, b) => {
+            if (sortOrder === 'NEWEST') return new Date(b.created_at) - new Date(a.created_at);
+            if (sortOrder === 'OLDEST') return new Date(a.created_at) - new Date(b.created_at);
+            return 0;
+        });
 
     const [resolveError, setResolveError] = useState('');
 
@@ -82,9 +92,21 @@ export default function TeamDashboard() {
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Your Assignments</h2>
                     </div>
 
-                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600 cursor-pointer" onClick={() => navigate('/team/assignments')}>
-                        View All <ArrowRight className="w-4 h-4 ml-1" />
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-extrabold border border-green-200 shadow-sm">
+                            {assignedTickets.length} ASSIGNED
+                        </span>
+                        <DashboardFilters
+                            priorityFilter={priorityFilter}
+                            setPriorityFilter={setPriorityFilter}
+                            sortOrder={sortOrder}
+                            setSortOrder={setSortOrder}
+                            themeColor="green"
+                        />
+                        <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-600 cursor-pointer ml-1" onClick={() => navigate('/team/assignments')}>
+                            View All <ArrowRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
