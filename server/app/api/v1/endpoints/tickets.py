@@ -240,6 +240,39 @@ def close_ticket(
     db.commit()
     db.refresh(ticket)
 
+    # Automatically generate Issue Completion Certificate
+    try:
+        from app.api.v1.endpoints.documents import save_document_data
+        from app.models.document_content import CompletionCertificateContent
+        import datetime
+        
+        # Prepare data for the certificate
+        closing_data = {
+            "ticket_id": ticket.id,
+            "title": ticket.title,
+            "description": ticket.description,
+            "resolution_notes": ticket.resolution_notes,
+            "created_at": ticket.created_at.isoformat() if ticket.created_at else "",
+            "closed_at": datetime.datetime.utcnow().isoformat(),
+            "created_by": ticket.creator.full_name if ticket.creator else "Unknown",
+            "resolved_by": ticket.resolver.full_name if ticket.resolver else "N/A",
+            "history": ticket.history
+        }
+        
+        save_document_data(
+            template_name="issue_completion.html",
+            ticket_id=ticket.id,
+            data=closing_data,
+            db=db,
+            document_type="completion_certificate",
+            content_model=CompletionCertificateContent
+        )
+        db.refresh(ticket)
+    except Exception as e:
+        # We don't want to fail the ticket closure if document generation fails
+        # but we should log it
+        print(f"Error generating closing document: {e}")
+
     # Notify team that their resolution was approved
     if ticket.assigned_team_id:
         try:

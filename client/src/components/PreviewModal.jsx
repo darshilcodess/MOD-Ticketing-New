@@ -4,41 +4,6 @@ import { X, Download, FileText, ExternalLink, Loader2 } from 'lucide-react';
 import api from '../services/api';
 
 export default function PreviewModal({ document, onClose }) {
-    const [blobUrl, setBlobUrl] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        const fetchPdf = async () => {
-            setLoading(true);
-            setError('');
-            if (blobUrl) {
-                URL.revokeObjectURL(blobUrl);
-                setBlobUrl(null);
-            }
-
-            try {
-                const response = await api.get(`/documents/download/${document.file_id}`, {
-                    responseType: 'blob'
-                });
-                const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
-                setBlobUrl(url);
-            } catch (err) {
-                console.error('Failed to load PDF preview:', err);
-                setError('Failed to load PDF preview. You can still download it using the button above.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (document) fetchPdf();
-
-        // Cleanup
-        return () => {
-            if (blobUrl) URL.revokeObjectURL(blobUrl);
-        };
-    }, [document]);
-
     if (!document) return null;
 
     const baseURL = api.defaults.baseURL || 'http://localhost:8000/api/v1';
@@ -101,25 +66,11 @@ export default function PreviewModal({ document, onClose }) {
 
                     {/* PDF Viewer */}
                     <div className="flex-1 bg-slate-100 relative overflow-hidden flex items-center justify-center">
-                        {loading ? (
-                            <div className="flex flex-col items-center gap-4">
-                                <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
-                                <p className="text-slate-500 font-medium">Generating preview...</p>
-                            </div>
-                        ) : error ? (
-                            <div className="text-center p-8 max-w-md space-y-4">
-                                <div className="p-4 rounded-full bg-red-50 text-red-500 mx-auto w-fit">
-                                    <FileText size={48} />
-                                </div>
-                                <p className="text-slate-600 font-medium">{error}</p>
-                            </div>
-                        ) : (
-                            <iframe
-                                src={`${blobUrl}#toolbar=0`}
-                                className="w-full h-full border-none"
-                                title="PDF Preview"
-                            />
-                        )}
+                        <iframe
+                            src={directPdfUrl}
+                            className="w-full h-full border-none"
+                            title="PDF Preview"
+                        />
                     </div>
 
                     {/* Footer */}

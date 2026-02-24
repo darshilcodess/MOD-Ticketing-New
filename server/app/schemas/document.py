@@ -147,6 +147,18 @@ class VoucherExplanationRequest(BaseModel):
     items: List[VoucherExplanationItem]
 
 
+class CompletionCertificateRequest(BaseModel):
+    ticket_id: int
+    title: str
+    description: str
+    resolution_notes: Optional[str] = ""
+    created_at: str
+    closed_at: str
+    created_by: str
+    resolved_by: Optional[str] = ""
+    history: List[dict]
+
+
 class DocumentResponse(BaseModel):
     file_id: str
     file: str
