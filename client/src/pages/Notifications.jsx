@@ -68,6 +68,7 @@ const Notifications = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+            window.dispatchEvent(new Event('notificationRead')); // Tell the bell to update
         } catch (err) {
             console.error('Failed to mark as read:', err);
         }
@@ -77,6 +78,7 @@ const Notifications = () => {
         setMarkingAll(true);
         await Promise.all(notifications.filter(n => !n.is_read).map(n => markRead(n.id)));
         setMarkingAll(false);
+        window.dispatchEvent(new Event('notificationRead')); // Tell the bell to update
     };
 
     const unreadCount = notifications.filter(n => !n.is_read).length;

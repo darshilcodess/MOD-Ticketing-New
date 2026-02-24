@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { motion, AnimatePresence } from 'framer-motion';
-import ActivityHistory from '../../components/ActivityHistory';
 import VoucherModal from '../../components/VoucherModal';
 import DashboardFilters from '../../components/DashboardFilters';
 
@@ -436,10 +435,6 @@ export default function UnitDashboard() {
                         )}
                     </div>
                 </section>
-            </div>
-
-            <div className="mt-8">
-                <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
             </div>
 
             {/* ── Create Ticket Modal ── */}

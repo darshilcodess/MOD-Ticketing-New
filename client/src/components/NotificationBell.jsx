@@ -23,23 +23,33 @@ const NotificationBell = () => {
 
     useEffect(() => {
         fetchNotifications();
+
+        // Listen for when notifications are marked as read on other pages
+        window.addEventListener('notificationRead', fetchNotifications);
+
         const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
-        return () => clearInterval(interval);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('notificationRead', fetchNotifications);
+        };
     }, []);
 
     return (
         <div className="relative">
             <button
                 onClick={() => navigate('/notifications')}
-                className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer flex items-center justify-center"
                 aria-label="Notifications"
             >
-                <Bell size={20} className="text-gray-600 dark:text-gray-300" />
-                {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full border-2 border-white dark:border-gray-800">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                )}
+                <div className="relative flex items-center justify-center">
+                    <Bell size={20} className="text-gray-600 dark:text-gray-300" />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full border-[1.5px] border-white dark:border-gray-800">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </div>
             </button>
         </div>
     );

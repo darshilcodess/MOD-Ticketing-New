@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ActivityHistory from '../../components/ActivityHistory';
 import api from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -351,9 +350,6 @@ export default function G1Dashboard() {
                     </div>
                 </section>
             </div>
-
-            {/* Activity History Section */}
-            <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
 
             <AnimatePresence>
                 {selectedTicket && (

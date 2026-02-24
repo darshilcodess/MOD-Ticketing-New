@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertTriangle, Briefcase, ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
-import ActivityHistory from '../../components/ActivityHistory';
 import DashboardFilters from '../../components/DashboardFilters';
 
 export default function TeamDashboard() {
@@ -47,6 +46,7 @@ export default function TeamDashboard() {
         });
 
     const [resolveError, setResolveError] = useState('');
+    const [resolutionNotes, setResolutionNotes] = useState('');
 
     const handleResolve = async (e) => {
         e.preventDefault();
@@ -351,10 +351,6 @@ export default function TeamDashboard() {
                         )}
                     </div>
                 </section>
-            </div>
-
-            <div className="mt-8">
-                <ActivityHistory tickets={tickets} limit={15} viewAllRoute="/activity" />
             </div>
 
             <AnimatePresence>
