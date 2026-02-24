@@ -151,20 +151,20 @@ export default function VoucherModal({ onClose, ticketId }) {
                 <div className="space-y-2">
                     <p className="text-[10px] font-bold text-orange-600 uppercase">IV Details</p>
                     {['iv_no', 'unit_iv', 'stn_iv', 'date_iv'].map(f => (
-                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                     ))}
                 </div>
                 <div className="space-y-2">
                     <p className="text-[10px] font-bold text-blue-600 uppercase">RV Details</p>
                     {['rv_no', 'unit_rv', 'stn_rv', 'date_rv'].map(f => (
-                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                        <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                     ))}
                 </div>
             </div>
             <div className="space-y-2">
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Body</p>
                 {['issued_to', 'compliance', 'auth'].map(f => (
-                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                 ))}
             </div>
             {renderItemTable(['part_no', 'nomenclature', 'total', 'remarks'])}
@@ -177,7 +177,7 @@ export default function VoucherModal({ onClose, ticketId }) {
                 {['shipment_no', 'shipment_date', 'class_name', 'obd_from', 'obd_to', 'obd_creation_date', 'str_no', 'tracking_number', 'str_date', 'sto_no', 'priority', 'type_of_str', 'authority', 'from_location', 'to_location', 'sus_no', 'ibd_number'].map(f => (
                     <div key={f} className="space-y-1">
                         <label className="text-[9px] font-bold text-slate-400 uppercase">{f.replace(/_/g, ' ')}</label>
-                        <Input value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-7 text-[11px]" />
+                        <Input value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-7 text-[11px] bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                     </div>
                 ))}
             </div>
@@ -189,7 +189,7 @@ export default function VoucherModal({ onClose, ticketId }) {
         <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                 {['iv_no', 'rv_no', 'unit_iv', 'unit_rv', 'stn_iv', 'stn_rv', 'date_iv', 'date_rv', 'issued_to', 'compliance', 'auth', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
-                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                 ))}
             </div>
             {renderItemTable(['part_no', 'nomenclature', 'hq', 'p', 'q', 'total'])}
@@ -200,7 +200,7 @@ export default function VoucherModal({ onClose, ticketId }) {
         <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                 {['iv_no', 'rv_no', 'date_iv', 'date_rv', 'unit_iv', 'unit_rv', 'pin_iv', 'pin_rv', 'station_iv', 'station_rv', 'issued_to', 'compliance', 'authority', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
-                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                 ))}
             </div>
             {renderItemTable(['vehicle_type', 'ba_no', 'au', 'qty', 'remarks'])}
@@ -211,13 +211,13 @@ export default function VoucherModal({ onClose, ticketId }) {
         <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
                 {['iv_no', 'rv_no', 'date_iv', 'date_rv', 'unit_iv', 'unit_rv', 'stn_iv', 'stn_rv', 'center_heading', 'issued_by', 'handed_over', 'taken_over', 'received_by'].map(f => (
-                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs" />
+                    <Input key={f} placeholder={f.replace('_', ' ').toUpperCase()} value={data[f]} onChange={e => updateField(f, e.target.value)} className="h-8 text-xs bg-white text-slate-900 border-slate-300 focus:border-orange-500 placeholder:text-slate-400" />
                 ))}
             </div>
             <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase">Paragraph Text</label>
                 <textarea
-                    className="w-full h-24 p-2 text-xs border rounded-md"
+                    className="w-full h-24 p-2 text-xs border rounded-md bg-white text-slate-900 border-slate-300 focus:border-orange-500 focus:outline-none placeholder:text-slate-400"
                     value={data.paragraph_text}
                     onChange={e => updateField('paragraph_text', e.target.value)}
                 />
@@ -249,7 +249,7 @@ export default function VoucherModal({ onClose, ticketId }) {
                                 <td className="px-2 py-1.5 text-slate-400 font-medium">{idx + 1}</td>
                                 {fields.map(f => (
                                     <td key={f} className="px-1 py-1">
-                                        <Input value={item[f]} onChange={e => updateItem(idx, f, e.target.value)} className="h-7 text-[10px] border-transparent hover:border-slate-200 focus:border-orange-400 px-1" />
+                                        <Input value={item[f]} onChange={e => updateItem(idx, f, e.target.value)} className="h-7 text-[10px] bg-white text-slate-900 border-slate-200 hover:border-slate-300 focus:border-orange-500 px-1 placeholder:text-slate-400" />
                                     </td>
                                 ))}
                                 <td className="px-2 py-1 text-center">
