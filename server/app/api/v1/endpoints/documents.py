@@ -87,7 +87,7 @@ def generate_outbound_delivery(data: OutboundDeliveryRequest, db: Session = Depe
     return _save_document_data_internal(
         template_name="outbound_delivery.html",
         ticket_id=data.ticket_id,
-        data=data.data,
+        data=data.model_dump(),
         db=db,
         document_type="outbound_delivery",
         content_model=OutboundDeliveryContent
@@ -100,7 +100,7 @@ def generate_voucher_variable_qty(data: VoucherVariableQtyRequest, db: Session =
     return _save_document_data_internal(
         template_name="voucher_with_variable_qty.html",
         ticket_id=data.ticket_id,
-        data=data.data,
+        data=data.model_dump(),
         db=db,
         document_type="voucher_variable_qty",
         content_model=VoucherVariableQtyContent
@@ -113,7 +113,7 @@ def generate_voucher_title(data: VoucherTitleRequest, db: Session = Depends(get_
     return _save_document_data_internal(
         template_name="vouhcer_with_title.html",
         ticket_id=data.ticket_id,
-        data=data.data,
+        data=data.model_dump(),
         db=db,
         document_type="voucher_title",
         content_model=VoucherWithTitleContent
@@ -126,7 +126,7 @@ def generate_voucher_explanation(data: VoucherExplanationRequest, db: Session = 
     return _save_document_data_internal(
         template_name="voucher_with_explanation.html",
         ticket_id=data.ticket_id,
-        data=data.data,
+        data=data.model_dump(),
         db=db,
         document_type="voucher_explanation",
         content_model=VoucherWithExplanationContent
@@ -169,7 +169,9 @@ def download_document(file_id: str, db: Session = Depends(get_db)):
         pdf_path = os.path.join(TEMP_DIR, f"{temp_id}.pdf")
 
         generate_html(db_doc.template_name, content_row.data, html_path)
-        html_to_pdf(html_path, pdf_path)
+        
+        landscape = db_doc.document_type == "outbound_delivery"
+        html_to_pdf(html_path, pdf_path, landscape=landscape)
 
         # 4. Stream and cleanup
         from starlette.background import BackgroundTasks
@@ -242,13 +244,8 @@ def update_document_content(file_id: str, payload: dict, db: Session = Depends(g
     if not content_row:
         raise HTTPException(status_code=404, detail="Document content not found")
 
-    # Update the JSON data
-    if db_doc.document_type == "voucher":
-        # Voucher uses a direct schema, payload is the data
-        content_row.data = payload
-    else:
-        # Others might send a wrapper or direct dict
-        content_row.data = payload.get("data", payload)
+    # Update the JSON data - payload is now the full model data from frontend
+    content_row.data = payload
         
     db.commit()
     return {"status": "success", "message": "Document updated"}
