@@ -6,7 +6,7 @@ from app.models.document import TicketDocument
 from app.models.document_content import (
     VoucherContent, OutboundDeliveryContent, 
     VoucherVariableQtyContent, VoucherWithTitleContent, 
-    VoucherWithExplanationContent
+    VoucherWithExplanationContent, CompletionCertificateContent
 )
 from app.services.documents.html_generator import generate_html
 from app.services.documents.pdf_generator import html_to_pdf
@@ -29,7 +29,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.pa
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 
 
-def _save_document_data_internal(
+def save_document_data(
     template_name: str,
     ticket_id: int,
     data: dict,
@@ -71,7 +71,7 @@ def _save_document_data_internal(
 @router.post("/voucher", response_model=DocumentResponse)
 def generate_voucher(data: VoucherRequest, db: Session = Depends(get_db)):
     """Store data for a Receipt, Issue and Expense Voucher."""
-    return _save_document_data_internal(
+    return save_document_data(
         template_name="voucher.html",
         ticket_id=data.ticket_id,
         data=data.model_dump(),
@@ -84,7 +84,7 @@ def generate_voucher(data: VoucherRequest, db: Session = Depends(get_db)):
 @router.post("/outbound-delivery", response_model=DocumentResponse)
 def generate_outbound_delivery(data: OutboundDeliveryRequest, db: Session = Depends(get_db)):
     """Store data for Outbound Delivery."""
-    return _save_document_data_internal(
+    return save_document_data(
         template_name="outbound_delivery.html",
         ticket_id=data.ticket_id,
         data=data.model_dump(),
@@ -97,7 +97,7 @@ def generate_outbound_delivery(data: OutboundDeliveryRequest, db: Session = Depe
 @router.post("/voucher-variable-qty", response_model=DocumentResponse)
 def generate_voucher_variable_qty(data: VoucherVariableQtyRequest, db: Session = Depends(get_db)):
     """Store data for Voucher with Variable Qty."""
-    return _save_document_data_internal(
+    return save_document_data(
         template_name="voucher_with_variable_qty.html",
         ticket_id=data.ticket_id,
         data=data.model_dump(),
@@ -110,7 +110,7 @@ def generate_voucher_variable_qty(data: VoucherVariableQtyRequest, db: Session =
 @router.post("/voucher-title", response_model=DocumentResponse)
 def generate_voucher_title(data: VoucherTitleRequest, db: Session = Depends(get_db)):
     """Store data for Voucher with Title."""
-    return _save_document_data_internal(
+    return save_document_data(
         template_name="vouhcer_with_title.html",
         ticket_id=data.ticket_id,
         data=data.model_dump(),
@@ -123,7 +123,7 @@ def generate_voucher_title(data: VoucherTitleRequest, db: Session = Depends(get_
 @router.post("/voucher-explanation", response_model=DocumentResponse)
 def generate_voucher_explanation(data: VoucherExplanationRequest, db: Session = Depends(get_db)):
     """Store data for Voucher with Explanation."""
-    return _save_document_data_internal(
+    return save_document_data(
         template_name="voucher_with_explanation.html",
         ticket_id=data.ticket_id,
         data=data.model_dump(),
@@ -150,7 +150,8 @@ def download_document(file_id: str, db: Session = Depends(get_db)):
         "outbound_delivery": OutboundDeliveryContent,
         "voucher_variable_qty": VoucherVariableQtyContent,
         "voucher_title": VoucherWithTitleContent,
-        "voucher_explanation": VoucherWithExplanationContent
+        "voucher_explanation": VoucherWithExplanationContent,
+        "completion_certificate": CompletionCertificateContent
     }
     
     content_model = CONTENT_MAP.get(db_doc.document_type)
@@ -210,7 +211,8 @@ def get_document_content(file_id: str, db: Session = Depends(get_db)):
         "outbound_delivery": OutboundDeliveryContent,
         "voucher_variable_qty": VoucherVariableQtyContent,
         "voucher_title": VoucherWithTitleContent,
-        "voucher_explanation": VoucherWithExplanationContent
+        "voucher_explanation": VoucherWithExplanationContent,
+        "completion_certificate": CompletionCertificateContent
     }
     
     content_model = CONTENT_MAP.get(db_doc.document_type)
@@ -236,7 +238,8 @@ def update_document_content(file_id: str, payload: dict, db: Session = Depends(g
         "outbound_delivery": OutboundDeliveryContent,
         "voucher_variable_qty": VoucherVariableQtyContent,
         "voucher_title": VoucherWithTitleContent,
-        "voucher_explanation": VoucherWithExplanationContent
+        "voucher_explanation": VoucherWithExplanationContent,
+        "completion_certificate": CompletionCertificateContent
     }
     
     content_model = CONTENT_MAP.get(db_doc.document_type)
